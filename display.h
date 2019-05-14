@@ -1,3 +1,6 @@
+#ifndef __DISPLAY
+#define __DISPLAY
+
 #include "config.h"
 #include "arduino.h"
 
@@ -12,19 +15,27 @@ class Display {
   int SRCLK_PIN;
   int SER_PIN;
 
-  int row_count;
-  int col_count;
+  int height;
+  int width;
   Mode mode;
 
-  Display(Mode mode, int row_count, int col_count,
+  Display(Mode mode, int width, int height,
     int rclk_pin, int srclk_pin, int ser_pin) :
-    mode(mode), row_count(row_count), col_count(col_count),
+    mode(mode), width(width), height(height),
     RCLK_PIN(rclk_pin), SRCLK_PIN(srclk_pin), SER_PIN(ser_pin) {}
 
-  void set_pixel(int row, int col);
-  bool get_pixel(int row, int col);
+  // Returns whether the pixel was on before
+  bool set_pixel(int x, int y, bool val);
+  
+  // Returns whether any pixel being set was set before
+  bool set_rect(int x, int y, int width, int height, bool val);
+  
+  bool get_pixel(int x, int y);
+  void clear_all();
   void refresh();
 
   private:
-  byte state[(MAX_DISPLAY_PIXELS + 7) / 8];
+  bool state[MAX_DISPLAY_PIXELS];
 };
+
+#endif

@@ -19,9 +19,9 @@ void Controller::update_state(Controller controllers[], int count) {
   digitalWrite(CONTROLLER_SHLD_PIN, HIGH);
 
   for (int i = 0; i < 8; i++) {
-    for (int c; c < count; c++) {
-      Controller con = controllers[c];
-      con.button_state = (con.button_state << 1) & (digitalRead(con.SER_PIN) & 1);
+    for (int c = 0; c < count; c++) {
+      Controller *con = &controllers[c];
+      con->button_state = (con->button_state << 1) | (digitalRead(con->SER_PIN) & 1);
     }
     
     digitalWrite(CONTROLLER_CLK_PIN, HIGH);

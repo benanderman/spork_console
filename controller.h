@@ -1,3 +1,6 @@
+#ifndef __CONTROLLER
+#define __CONTROLLER
+
 #include "config.h"
 #include "arduino.h"
 
@@ -5,14 +8,14 @@ class Controller {
   public:
   
   enum Button {
-    left = 0,
-    up,
-    right,
-    down,
-    start,
-    select,
+    b = 0,
     a,
-    b
+    select,
+    start,
+    down,
+    right,
+    up,
+    left
   };
   
   Controller(int ser_pin, int connected_pin);
@@ -30,3 +33,5 @@ class Controller {
   
   byte button_state;
 };
+
+#endif
