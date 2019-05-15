@@ -20,7 +20,7 @@ class Controller {
   
   Controller(int ser_pin, int connected_pin);
   
-  bool operator[](Button button);
+  bool operator[](Button button) const;
   
   // Unreliable due to lack of pull-down resistor
   bool is_connected();

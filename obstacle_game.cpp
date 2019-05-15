@@ -1,7 +1,7 @@
 #include "obstacle_game.h"
 
 int entity_size = 2;
-int obstacles[] = {0, 8, 3, 5, 1, 7, 2, 4, 6, 8, 1, 5, 2, 6, 2, 8, 0};
+int obstacles[] = {0, 8, 3, 5, 1, 7, 2, 4, 8, 5, 1, 5, 2, 6, 2, 8, 4};
 
 void ObstacleGame::play() {
   

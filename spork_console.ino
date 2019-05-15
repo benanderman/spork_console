@@ -2,6 +2,7 @@
 #include "controller.h"
 #include "display.h"
 #include "obstacle_game.h"
+#include "snake_game.h"
 
 Controller controllers[2] = {
   Controller(CONTROLLER_1_SER_PIN, CONTROLLER_1_CONN_PIN),
@@ -28,20 +29,7 @@ void setup() {
 }
 
 void loop() {
-  ObstacleGame obstacle_game(main_display, CONSOLE_LEFT_BUTTON_PIN, CONSOLE_RIGHT_BUTTON_PIN, controllers[0]);
-  obstacle_game.play();
-  
-  for (int cycle = 0; cycle < 1000; cycle++) {
-    for (int i = 0; i < 200; i++) {
-      bool val = ((i + 1) % (cycle % 20)) == 0;
-      digitalWrite(DISPLAY_SER_PIN, val);
-      digitalWrite(DISPLAY_SRCLK_PIN, HIGH);
-      digitalWrite(DISPLAY_SRCLK_PIN, LOW);
-    }
-    digitalWrite(DISPLAY_RCLK_PIN, HIGH);
-    digitalWrite(DISPLAY_RCLK_PIN, LOW);
-    int extraDelay = digitalRead(CONSOLE_LEFT_BUTTON_PIN) ? -100 : 0;
-    extraDelay += digitalRead(CONSOLE_RIGHT_BUTTON_PIN) ? 1000 : 0;
-    delay(200 + extraDelay);
-  }
+  ObstacleGame obstacle_game(main_display, CONSOLE_LEFT_BUTTON_PIN, CONSOLE_RIGHT_BUTTON_PIN, controllers[1]);
+  SnakeGame snake_game(main_display, controllers, sizeof(controllers) / sizeof(*controllers));
+  snake_game.play();
 }

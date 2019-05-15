@@ -4,7 +4,7 @@ Controller::Controller(int ser_pin, int connected_pin) :
   SER_PIN(ser_pin), CONNECTED_PIN(connected_pin), button_state(0)
 {}
   
-bool Controller::operator[](Button button) {
+bool Controller::operator[](Button button) const {
   return (button_state >> button) & 1;
 }
 
