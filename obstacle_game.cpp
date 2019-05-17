@@ -3,7 +3,7 @@
 int entity_size = 2;
 int obstacles[] = {0, 8, 3, 5, 1, 7, 2, 4, 8, 5, 1, 5, 2, 6, 2, 8, 4};
 
-void ObstacleGame::play() {
+bool ObstacleGame::play() {
   
   player_x = disp.width / 2 - entity_size / 2;
   player_y = disp.height - entity_size;
@@ -19,7 +19,10 @@ void ObstacleGame::play() {
     unsigned long now = millis();
 
     if (now > last_move + move_speed) {
-      handle_input();
+      bool exit_game = handle_input();
+      if (exit_game) {
+        return true;
+      }
       last_move = now;
     }
 
@@ -38,10 +41,13 @@ void ObstacleGame::play() {
     alive = !disp.set_rect(player_x, player_y, entity_size, entity_size, true);
     
     disp.refresh();
+    delay(1);
   }
+
+  return false;
 }
 
-void ObstacleGame::handle_input() {
+bool ObstacleGame::handle_input() {
   bool left = digitalRead(LEFT_BUTTON_PIN);
   bool right = digitalRead(RIGHT_BUTTON_PIN);
   bool up = false;
@@ -62,6 +68,8 @@ void ObstacleGame::handle_input() {
   player_y += up ? -1 : 0;
   player_y += down ? 1 : 0;
   player_y = max(0, min(disp.height - entity_size, player_y));
+
+  return controller[Controller::Button::start];
 }
 
 void ObstacleGame::draw_obstacles(int cycle) {

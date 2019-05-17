@@ -6,17 +6,17 @@
 
 class SnakeGame {
   public:
-  Display disp;
+  Display& disp;
   Controller *controllers;
   int controller_count;
 
-  SnakeGame(Display disp, Controller *controllers, int controller_count):
+  SnakeGame(Display& disp, Controller *controllers, int controller_count):
     disp(disp), controllers(controllers), controller_count(controller_count) {}
 
-  void play();
+  bool play();
 
   private:
-  void handle_input();
+  bool handle_input();
   void cycle();
 };
 

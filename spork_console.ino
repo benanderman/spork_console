@@ -1,6 +1,7 @@
 #include "config.h"
 #include "controller.h"
 #include "display.h"
+#include "menu.h"
 #include "obstacle_game.h"
 #include "snake_game.h"
 
@@ -29,7 +30,21 @@ void setup() {
 }
 
 void loop() {
-  ObstacleGame obstacle_game(main_display, CONSOLE_LEFT_BUTTON_PIN, CONSOLE_RIGHT_BUTTON_PIN, controllers[1]);
+  Menu menu(main_display, controllers, sizeof(controllers) / sizeof(*controllers), CONSOLE_LEFT_BUTTON_PIN, CONSOLE_RIGHT_BUTTON_PIN);
+  ObstacleGame obstacle_game(main_display, CONSOLE_LEFT_BUTTON_PIN, CONSOLE_RIGHT_BUTTON_PIN, controllers[0]);
   SnakeGame snake_game(main_display, controllers, sizeof(controllers) / sizeof(*controllers));
-  snake_game.play();
+
+  while (true) {
+    MenuChoice choice = menu.choose();
+    switch (choice) {
+      case MenuChoice::snake: {
+        while (!snake_game.play()) {}
+        break;
+      }
+      case MenuChoice::obstacle: {
+        while (!obstacle_game.play()) {}
+        break;
+      }
+    }
+  }
 }

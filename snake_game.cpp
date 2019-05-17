@@ -109,7 +109,7 @@ class Player {
 
 Player *players[2];
 
-void SnakeGame::play() {
+bool SnakeGame::play() {
   randomSeed(analogRead(A0));
   
   byte start_len = 3;
@@ -133,7 +133,10 @@ void SnakeGame::play() {
     disp.clear_all();
 
     if (now > last_input + input_speed) {
-      handle_input();
+      bool exit_game = handle_input();
+      if (exit_game) {
+        return true;
+      }
       last_input = now;
     }
 
@@ -163,14 +166,20 @@ void SnakeGame::play() {
     disp.set_pixel(food.x, food.y, true);
     
     disp.refresh();
+    delay(1);
   }
+  return false;
 }
 
-void SnakeGame::handle_input() {
-  Controller::update_state(controllers, 2);
-  for (int i = 0; i < 2; i++) {
+bool SnakeGame::handle_input() {
+  Controller::update_state(controllers, controller_count);
+  for (int i = 0; i < controller_count; i++) {
     if (controllers[i].is_connected()) {
+      if (controllers[i][Controller::Button::start]) {
+        return true;
+      }
       players[i]->handle_input(controllers[i]);
     }
   }
+  return false;
 }
