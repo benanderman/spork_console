@@ -1,3 +1,6 @@
+#ifndef __OBSTACLE_GAME
+#define __OBSTACLE_GAME
+
 #include "display.h"
 #include "controller.h"
 
@@ -19,3 +22,5 @@ class ObstacleGame {
   bool handle_input();
   void draw_obstacles(int cycle);
 };
+
+#endif

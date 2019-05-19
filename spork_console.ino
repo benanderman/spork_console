@@ -4,6 +4,7 @@
 #include "menu.h"
 #include "obstacle_game.h"
 #include "snake_game.h"
+#include "sporktris.h"
 
 Controller controllers[2] = {
   Controller(CONTROLLER_1_SER_PIN, CONTROLLER_1_CONN_PIN),
@@ -33,6 +34,7 @@ void loop() {
   Menu menu(main_display, controllers, sizeof(controllers) / sizeof(*controllers), CONSOLE_LEFT_BUTTON_PIN, CONSOLE_RIGHT_BUTTON_PIN);
   ObstacleGame obstacle_game(main_display, CONSOLE_LEFT_BUTTON_PIN, CONSOLE_RIGHT_BUTTON_PIN, controllers[0]);
   SnakeGame snake_game(main_display, controllers, sizeof(controllers) / sizeof(*controllers));
+  Sporktris sporktris(main_display, controllers[0]);
 
   while (true) {
     MenuChoice choice = menu.choose();
@@ -43,6 +45,10 @@ void loop() {
       }
       case MenuChoice::obstacle: {
         while (!obstacle_game.play()) {}
+        break;
+      }
+      case MenuChoice::sporktris: {
+        while (!sporktris.play()) {}
         break;
       }
     }

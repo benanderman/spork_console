@@ -6,7 +6,8 @@
 
 enum MenuChoice {
   snake,
-  obstacle
+  obstacle,
+  sporktris
 };
 
 class Menu {

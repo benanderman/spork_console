@@ -48,11 +48,24 @@ MenuChoice Menu::choose() {
       "__OO______|"
       "__OO_OO___|"
       "_____OO___|"
+    ),
+    Option(MenuChoice::sporktris,
+      "__________|"
+      "__________|"
+      "__________|"
+      "__OO______|"
+      "__O_______|"
+      "__O_______|"
+      "________OO|"
+      "O____O__OO|"
+      "OO_O_OOOOO|"
+      "OO_OOOOO_O|"
     )
   };
 
   bool chosen = false;
-  bool option_index = 0;
+  int option_index = 0;
+  int display_offset = 0;
   int option_count = sizeof(options) / sizeof(*options);
   unsigned long last_change = millis();
   while (!chosen) {
@@ -67,7 +80,7 @@ MenuChoice Menu::choose() {
           option_index = (option_count + option_index - 1) % option_count;
         }
         if (controllers[c][Controller::Button::down]) {
-          option_index = (option_count + option_index + 1) % option_count;
+          option_index = (option_index + 1) % option_count;
         }
         if (controllers[c][Controller::Button::select]) {
           chosen = true;
@@ -80,10 +93,17 @@ MenuChoice Menu::choose() {
         option_index = (option_index + 1) % option_count;
       }
       last_change = now;
+      if (option_index - display_offset < 0) {
+        display_offset = option_index;
+      }
+      if (option_index - display_offset >= 2) {
+        display_offset = option_index - 1;
+      }
     }
+
     disp.clear_all();
     for (int i = 0; i < sizeof(options) / sizeof(*options); i++) {
-      options[i].draw(disp, 0, 10 * i, i == option_index);
+      options[i].draw(disp, 0, 10 * (i - display_offset), i == option_index);
     }
     disp.refresh();
     delay(1);
@@ -93,7 +113,7 @@ MenuChoice Menu::choose() {
   for (int y = 0; y < disp.height; y++) {
     disp.set_rect(0, y, disp.width, 1, false);
     disp.refresh();
-    delay(10);
+    delay(5);
   }
   
   return options[option_index].choice;
