@@ -1,5 +1,6 @@
 #include "sporktris.h"
 #include "config.h"
+#include "graphics.h"
 
 Tetromino Tetromino::random_piece() {
   Tetromino pieces[] = {
@@ -98,16 +99,24 @@ bool Sporktris::play() {
   need_new_piece = true;
   clearing_lines = false;
   memset(last_input_cycles, 0, sizeof(last_input_cycles));
+  line_count = 0;
+  paused = false;
 
   bool alive = true;
   unsigned long last_cycle = millis();
   unsigned long cycle_length = 500;
+  int level = 1;
   while (alive) {
     unsigned long now = millis();
 
     bool should_exit = handle_input();
     if (should_exit) {
+      Graphics::clear_rows(disp);
       return true;
+    }
+
+    if (paused) {
+      continue;
     }
 
     if (need_new_piece) {
@@ -122,10 +131,15 @@ bool Sporktris::play() {
     if (now > last_cycle + cycle_length) {
       alive = cycle();
       last_cycle = now;
+      if (line_count / 10 > level) {
+        level++;
+        cycle_length = floor(float(cycle_length + 35) / 1.5);
+      }
     }
 
     draw();
   }
+  Graphics::clear_rows(disp);
   return false;
 }
 
@@ -135,6 +149,11 @@ bool Sporktris::handle_input() {
   if (controller.is_connected()) {
     if (controller[Controller::Button::start]) {
       return true;
+    }
+    if (controller[Controller::Button::select] && now > last_input_cycles[Controller::Button::select] + 500) {
+      last_input_cycles[Controller::Button::select] = now;
+      paused = !paused;
+      return false;
     }
     if (controller[Controller::Button::left] && now > last_input_cycles[Controller::Button::left] + 100) {
       if (is_valid_position(cur_piece, piece_x - 1, piece_y)) {
@@ -151,6 +170,12 @@ bool Sporktris::handle_input() {
       if (is_valid_position(cur_piece, piece_x, piece_y + 1)) {
         piece_y++;
         last_input_cycles[Controller::Button::down] = now;
+      }
+    }
+    if (controller[Controller::Button::up] && now > last_input_cycles[Controller::Button::up] + 300) {
+      while (is_valid_position(cur_piece, piece_x, piece_y + 1)) {
+        piece_y++;
+        last_input_cycles[Controller::Button::up] = now;
       }
     }
     if (controller[Controller::Button::a] && now > last_input_cycles[Controller::Button::a] + 200) {
@@ -175,12 +200,8 @@ bool Sporktris::cycle() {
 
   // Move all the lines down to fill the cleared lines, instead of moving the piece
   if (clearing_lines) {
-    int clear_lines = 0;
+    int top = disp.height - 1;
     for (int y = disp.height - 1; y >= 0; y--) {
-      if (clear_lines > 0) {
-        memcpy(&board[(y + clear_lines) * disp.width], &board[y * disp.width], disp.width);
-      }
-      
       bool is_clear = true;
       for (int x = 0; x < disp.width; x++) {
         if (board[y * disp.width + x]) {
@@ -188,8 +209,14 @@ bool Sporktris::cycle() {
           break;
         }
       }
-      if (is_clear) {
-        clear_lines++;
+      
+      if (top != y) {
+        memcpy(&board[top * disp.width], &board[y * disp.width], disp.width);
+        memset(&board[y * disp.width], false, disp.width);
+      }
+      
+      if (!is_clear) {
+        top--;
       }
     }
     clearing_lines = false;
@@ -219,6 +246,7 @@ bool Sporktris::cycle() {
       if (cleared_line) {
         memset(board + py * disp.width, false, disp.width);
         clearing_lines = true;
+        line_count++;
       }
     }
     // The player is only alive if the top of the piece that just landed is fully on the board

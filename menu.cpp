@@ -1,4 +1,5 @@
 #include "menu.h"
+#include "graphics.h"
 
 struct Option {
   MenuChoice choice;
@@ -72,6 +73,7 @@ MenuChoice Menu::choose() {
     unsigned long now = millis();
     if (now > last_change + 300) {
       Controller::update_state(controllers, controller_count);
+      int old_index = option_index;
       for (int c = 0; c < controller_count; c++) {
         if (!controllers[c].is_connected()) {
           continue;
@@ -92,12 +94,14 @@ MenuChoice Menu::choose() {
       if (digitalRead(LEFT_BUTTON_PIN)) {
         option_index = (option_index + 1) % option_count;
       }
-      last_change = now;
       if (option_index - display_offset < 0) {
         display_offset = option_index;
       }
       if (option_index - display_offset >= 2) {
         display_offset = option_index - 1;
+      }
+      if (old_index != option_index) {
+        last_change = now;
       }
     }
 
@@ -110,11 +114,7 @@ MenuChoice Menu::choose() {
   }
 
   // Animate clearing the display, to avoid a power surge
-  for (int y = 0; y < disp.height; y++) {
-    disp.set_rect(0, y, disp.width, 1, false);
-    disp.refresh();
-    delay(5);
-  }
+  Graphics::clear_rows(disp);
   
   return options[option_index].choice;
 }

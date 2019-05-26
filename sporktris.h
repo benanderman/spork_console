@@ -41,6 +41,10 @@ class Sporktris {
   bool need_new_piece;
   bool clearing_lines;
 
+  int line_count;
+
+  bool paused;
+
   unsigned long last_input_cycles[8];
   
   bool handle_input();
