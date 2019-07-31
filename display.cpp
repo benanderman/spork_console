@@ -1,12 +1,24 @@
 #include "display.h"
 
+bool Display::get_pixel(int x, int y) {
+  int index = y * width + x;
+  return (state[index / 8] >> (index % 8)) & 1;
+}
+
 bool Display::set_pixel(int x, int y, bool val) {
   int index = y * width + x;
   if (index < 0 || index >= MAX_DISPLAY_PIXELS) {
     return false;
   }
-  bool old_value = state[index];
-  state[index] = val;
+  bool old_value = (state[index / 8] >> (index % 8)) & 1;
+  byte mask = ~(1 << (index % 8));
+  state[index / 8] = (state[index / 8] & mask) | (val << (index % 8));
+
+  if (neopixels) {
+    uint32_t color = val ? neopixels->Color(255, 255, 255) : neopixels->Color(0, 0, 0);
+    neopixels->setPixelColor(index, color);
+  }
+  
   return old_value;
 }
 
@@ -20,15 +32,19 @@ bool Display::set_rect(int x, int y, int width, int height, bool val) {
   return result;
 }
 
-bool Display::get_pixel(int x, int y) {
-  return state[y * width + x];
-}
-
 void Display::clear_all() {
-  memset(&state, 0, MAX_DISPLAY_PIXELS);
+  memset(&state, 0, MAX_DISPLAY_PIXELS / 8);
+  if (neopixels) {
+    neopixels->clear();
+  }
 }
 
 void Display::refresh() {
+  if (neopixels) {
+    neopixels->show();
+    return;
+  }
+  
   int total_pixels = width * height;
   for (int i = total_pixels - 1; i >= 0; i--) {
     int x, y;
@@ -58,4 +74,17 @@ void Display::refresh() {
   }
   digitalWrite(RCLK_PIN, HIGH);
   digitalWrite(RCLK_PIN, LOW);
+}
+
+void Display::set_brightness(byte brightness) {
+  // Output enable on 595 shift registers is on when grounded
+  this->brightness = brightness;
+  if (neopixels) {
+    neopixels->setBrightness(brightness);
+  }
+  analogWrite(OE_PIN, 255 - this->brightness);
+}
+
+byte Display::get_brightness() {
+  return brightness;
 }

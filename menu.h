@@ -20,9 +20,14 @@ class Menu {
 
   Menu(Display& disp, Controller *controllers, int controller_count, int left_button_pin, int right_button_pin):
     disp(disp), controllers(controllers), controller_count(controller_count),
-    LEFT_BUTTON_PIN(left_button_pin), RIGHT_BUTTON_PIN(right_button_pin) {}
+    LEFT_BUTTON_PIN(left_button_pin), RIGHT_BUTTON_PIN(right_button_pin),
+    option_index(0), display_offset(0) {}
   
   MenuChoice choose();
+
+  private:
+  int option_index;
+  int display_offset;
 };
 
 #endif
