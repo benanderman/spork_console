@@ -14,6 +14,7 @@ struct Tetromino {
   byte axis_x;
   byte axis_y;
   byte cur_pos;
+  byte color;
   byte points[4][2];
 
   Tetromino rotated(bool cw);
@@ -33,7 +34,7 @@ class Sporktris {
   bool play();
 
   private:
-  bool *board;
+  byte *board;
   
   Tetromino cur_piece;
   short piece_x;

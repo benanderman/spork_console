@@ -9,6 +9,7 @@ Tetromino Tetromino::random_piece() {
       .axis_x = 1,
       .axis_y = 1,
       .cur_pos = 0,
+      .color = 1,
       .points = { {1,0}, {1,1}, {1,2}, {1,3} }
     },
     { // L
@@ -16,6 +17,7 @@ Tetromino Tetromino::random_piece() {
       .axis_x = 1,
       .axis_y = 2,
       .cur_pos = 0,
+      .color = 2,
       .points = { {0,2}, {1,2}, {2,2}, {2,3} }
     },
     { // S
@@ -23,6 +25,7 @@ Tetromino Tetromino::random_piece() {
       .axis_x = 1,
       .axis_y = 2,
       .cur_pos = 0,
+      .color = 3,
       .points = { {1,2}, {2,2}, {0,3}, {1,3} }
     },
     { // #
@@ -30,6 +33,7 @@ Tetromino Tetromino::random_piece() {
       .axis_x = 1,
       .axis_y = 2,
       .cur_pos = 0,
+      .color = 4,
       .points = { {1,2}, {2,2}, {1,3}, {2,3} }
     },
     { // L
@@ -37,6 +41,7 @@ Tetromino Tetromino::random_piece() {
       .axis_x = 1,
       .axis_y = 2,
       .cur_pos = 0,
+      .color = 5,
       .points = { {0,2}, {1,2}, {2,2}, {0,3} }
     },
     { // S
@@ -44,6 +49,7 @@ Tetromino Tetromino::random_piece() {
       .axis_x = 1,
       .axis_y = 2,
       .cur_pos = 0,
+      .color = 6,
       .points = { {0,2}, {1,2}, {1,3}, {2,3} }
     },
     { // T
@@ -51,6 +57,7 @@ Tetromino Tetromino::random_piece() {
       .axis_x = 1,
       .axis_y = 2,
       .cur_pos = 0,
+      .color = 7,
       .points = { {0,2}, {1,2}, {2,2}, {1,3} }
     }
   };
@@ -92,8 +99,19 @@ byte Tetromino::Rect::center_x() {
 
 bool Sporktris::play() {
   randomSeed(analogRead(A0));
+  byte palette[][3] = {
+    {0, 0, 0},
+    {16, 4, 4},
+    {4, 16, 4},
+    {4, 4, 16},
+    {10, 10, 4},
+    {10, 4, 10},
+    {4, 10, 10},
+    {8, 8, 8},
+  };
+  disp.palette = palette;
   
-  bool board[MAX_DISPLAY_PIXELS];
+  byte board[MAX_DISPLAY_PIXELS];
   memset(board, false, sizeof(board));
   this->board = board;
   need_new_piece = true;
@@ -112,6 +130,7 @@ bool Sporktris::play() {
     bool should_exit = handle_input();
     if (should_exit) {
       Graphics::clear_rows(disp);
+      disp.palette = NULL;
       return true;
     }
 
@@ -122,7 +141,7 @@ bool Sporktris::play() {
     if (need_new_piece) {
       cur_piece = Tetromino::random_piece();
       Tetromino::Rect rect = cur_piece.bounding_rect();
-      piece_x = disp.width / 2 - rect.center_x();
+      piece_x = disp.width / 2 - rect.x - rect.center_x();
       // TODO: Figure out why this doesn't work with negative numbers
       piece_y = -rect.y2 - 1;
       need_new_piece = false;
@@ -140,6 +159,9 @@ bool Sporktris::play() {
     draw();
   }
   Graphics::clear_rows(disp);
+
+  disp.palette = NULL;
+  
   return false;
 }
 
@@ -212,7 +234,7 @@ bool Sporktris::cycle() {
       
       if (top != y) {
         memcpy(&board[top * disp.width], &board[y * disp.width], disp.width);
-        memset(&board[y * disp.width], false, disp.width);
+        memset(&board[y * disp.width], 0, disp.width);
       }
       
       if (!is_clear) {
@@ -235,7 +257,7 @@ bool Sporktris::cycle() {
       if (py < 0) {
         continue;
       }
-      board[py * disp.width + px] = true;
+      board[py * disp.width + px] = cur_piece.color;
       
       bool cleared_line = true;
       for (int x = 0; x < disp.width; x++) {
@@ -271,7 +293,7 @@ void Sporktris::draw() {
   for (int i = 0; i < sizeof(cur_piece.points) / sizeof(*cur_piece.points); i++) {
     int px = cur_piece.points[i][0] + piece_x;
     int py = cur_piece.points[i][1] + piece_y;
-    disp.set_pixel(px, py, true);
+    disp.set_pixel(px, py, cur_piece.color);
   }
   
   disp.refresh();

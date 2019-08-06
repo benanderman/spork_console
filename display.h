@@ -3,7 +3,6 @@
 
 #include "config.h"
 #include "arduino.h"
-#include <Adafruit_NeoPixel.h>
 
 class Display {
   public:
@@ -21,30 +20,31 @@ class Display {
   int width;
   Mode mode;
 
+  byte (*palette)[3];
+
   Display(Mode mode, int width, int height,
-    int rclk_pin, int srclk_pin, int ser_pin, int oe_pin,
-    Adafruit_NeoPixel *neopixels = NULL) :
+    int rclk_pin, int srclk_pin, int ser_pin, int oe_pin, bool neopixels = false) :
     mode(mode), width(width), height(height),
     RCLK_PIN(rclk_pin), SRCLK_PIN(srclk_pin), SER_PIN(ser_pin), OE_PIN(oe_pin),
-    neopixels(neopixels) {}
+    neopixels(neopixels), palette(NULL) {}
 
   // Returns whether the pixel was on before
-  bool set_pixel(int x, int y, bool val);
+  byte set_pixel(int x, int y, byte val);
   
   // Returns whether any pixel being set was set before
-  bool set_rect(int x, int y, int width, int height, bool val);
+  bool set_rect(int x, int y, int width, int height, byte val);
   
-  bool get_pixel(int x, int y);
+  byte get_pixel(int x, int y);
   void clear_all();
   void refresh();
   void set_brightness(byte brightness);
   byte get_brightness();
   
-  Adafruit_NeoPixel *neopixels;
+  bool neopixels;
 
   private:
   byte brightness;
-  byte state[MAX_DISPLAY_PIXELS / 8];
+  byte state[MAX_DISPLAY_PIXELS];
 };
 
 #endif

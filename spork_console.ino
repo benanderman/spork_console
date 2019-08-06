@@ -5,6 +5,7 @@
 #include "obstacle_game.h"
 #include "snake_game.h"
 #include "sporktris.h"
+#include "neopixels.h"
 
 Controller controllers[2] = {
   Controller(CONTROLLER_1_SER_PIN, CONTROLLER_1_CONN_PIN),
@@ -58,14 +59,11 @@ void loop_neopixels() {
   digitalWrite(DISPLAY_RCLK_PIN, LOW);
   
   pinMode(CONTROLLER_2_SER_PIN, OUTPUT);
-  Adafruit_NeoPixel neopixels(MAX_DISPLAY_PIXELS, CONTROLLER_2_SER_PIN, NEO_GRB + NEO_KHZ800);
-  neopixels.begin();
-  neopixels.show();
-  
-  neopixels.setBrightness(50);
+
+  Neopixels::ledSetup();
   
   Display disp(Display::Mode::rows, 10, 20,
-    DISPLAY_RCLK_PIN, DISPLAY_SRCLK_PIN, DISPLAY_SER_PIN, DISPLAY_OE_PIN, &neopixels);
+    DISPLAY_RCLK_PIN, DISPLAY_SRCLK_PIN, DISPLAY_SER_PIN, DISPLAY_OE_PIN, true);
   loop(disp);
 }
 
@@ -78,14 +76,19 @@ void loop_internal_disp() {
 void loop(Display& disp) {
   
   disp.set_brightness(DISPLAY_INITIAL_BRIGHTNESS);
+
+  int controller_count = sizeof(controllers) / sizeof(*controllers);
+  if (disp.neopixels) {
+    controller_count = 1;
+  }
   
-  Menu menu(disp, controllers, sizeof(controllers) / sizeof(*controllers), CONSOLE_LEFT_BUTTON_PIN, CONSOLE_RIGHT_BUTTON_PIN);
+  Menu menu(disp, controllers, controller_count, CONSOLE_LEFT_BUTTON_PIN, CONSOLE_RIGHT_BUTTON_PIN);
 
   while (true) {
     MenuChoice choice = menu.choose();
     switch (choice) {
       case MenuChoice::snake: {
-        SnakeGame snake_game(disp, controllers, sizeof(controllers) / sizeof(*controllers));
+        SnakeGame snake_game(disp, controllers, controller_count);
         while (!snake_game.play()) {}
         break;
       }

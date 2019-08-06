@@ -1,28 +1,23 @@
 #include "display.h"
+#include "neopixels.h"
 
-bool Display::get_pixel(int x, int y) {
+byte Display::get_pixel(int x, int y) {
   int index = y * width + x;
-  return (state[index / 8] >> (index % 8)) & 1;
+  return state[index];
 }
 
-bool Display::set_pixel(int x, int y, bool val) {
+byte Display::set_pixel(int x, int y, byte val) {
   int index = y * width + x;
   if (index < 0 || index >= MAX_DISPLAY_PIXELS) {
     return false;
   }
-  bool old_value = (state[index / 8] >> (index % 8)) & 1;
-  byte mask = ~(1 << (index % 8));
-  state[index / 8] = (state[index / 8] & mask) | (val << (index % 8));
-
-  if (neopixels) {
-    uint32_t color = val ? neopixels->Color(255, 255, 255) : neopixels->Color(0, 0, 0);
-    neopixels->setPixelColor(index, color);
-  }
+  bool old_value = state[index];
+  state[index] = val;
   
   return old_value;
 }
 
-bool Display::set_rect(int x, int y, int width, int height, bool val) {
+bool Display::set_rect(int x, int y, int width, int height, byte val) {
   bool result = false;
   for (int cx = x; cx < x + width; cx++) {
     for (int cy = y; cy < y + height; cy++) {
@@ -33,20 +28,17 @@ bool Display::set_rect(int x, int y, int width, int height, bool val) {
 }
 
 void Display::clear_all() {
-  memset(&state, 0, MAX_DISPLAY_PIXELS / 8);
-  if (neopixels) {
-    neopixels->clear();
-  }
+  memset(&state, 0, MAX_DISPLAY_PIXELS);
 }
 
 void Display::refresh() {
-  if (neopixels) {
-    neopixels->show();
-    return;
-  }
-  
   int total_pixels = width * height;
-  for (int i = total_pixels - 1; i >= 0; i--) {
+  for (int p = 0; p < total_pixels; p++) {
+    int i = p;
+    if (!neopixels) {
+      i = total_pixels - 1 - i;
+    }
+    
     int x, y;
     switch (mode) {
       case Mode::rows: {
@@ -66,22 +58,32 @@ void Display::refresh() {
       }
     }
     
-    
-    bool val = get_pixel(x, y);
-    digitalWrite(SER_PIN, val);
-    digitalWrite(SRCLK_PIN, HIGH);
-    digitalWrite(SRCLK_PIN, LOW);
+    byte val = get_pixel(x, y);
+
+    if (neopixels) {
+      if (palette) {
+        Neopixels::sendPixel(palette[val][0], palette[val][1], palette[val][2]);
+      } else {
+        byte pixelBrightness = (val ? brightness : 0);
+        Neopixels::sendPixel(pixelBrightness, pixelBrightness, pixelBrightness);
+      }
+    } else {
+      digitalWrite(SER_PIN, val);
+      digitalWrite(SRCLK_PIN, HIGH);
+      digitalWrite(SRCLK_PIN, LOW);
+    }
   }
-  digitalWrite(RCLK_PIN, HIGH);
-  digitalWrite(RCLK_PIN, LOW);
+  if (neopixels) {
+    Neopixels::show();
+  } else {
+    digitalWrite(RCLK_PIN, HIGH);
+    digitalWrite(RCLK_PIN, LOW);
+  }
 }
 
 void Display::set_brightness(byte brightness) {
   // Output enable on 595 shift registers is on when grounded
   this->brightness = brightness;
-  if (neopixels) {
-    neopixels->setBrightness(brightness);
-  }
   analogWrite(OE_PIN, 255 - this->brightness);
 }
 

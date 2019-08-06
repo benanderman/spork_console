@@ -5,7 +5,7 @@
 #include "controller.h"
 
 enum MenuChoice {
-  snake,
+  snake = 0,
   obstacle,
   sporktris
 };

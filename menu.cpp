@@ -42,14 +42,22 @@ struct Option {
 
   Option(MenuChoice choice): choice(choice) {}
 
-  void draw(Display& disp, int x, int y, bool invert) {
+  void draw(Display& disp, int x, int y, bool selected) {
     int x_origin = x;
     int y_origin = y;
     for (int i = 0; i < 100; i++) {
       int x = x_origin + i % 10;
       int y = y_origin + i / 10;
       bool val = read_graphic(i) != '_';
-      disp.set_pixel(x, y, invert ? !val : val);
+      byte color = selected ? !val : val;
+      if (disp.neopixels) {
+        if (val) {
+          color = selected ? 2 + choice : 1;
+        } else {
+          color = selected ? 5 : 0;
+        }
+      }
+      disp.set_pixel(x, y, color);
     }
   }
 
@@ -68,6 +76,16 @@ MenuChoice Menu::choose() {
     Option(MenuChoice::obstacle),
     Option(MenuChoice::sporktris)
   };
+
+  byte palette[][3] = {
+    {0, 0, 0},
+    {8, 8, 8},
+    {0, 0, 24},
+    {0, 24, 0},
+    {24, 0, 0},
+    {1, 1, 1},
+  };
+  disp.palette = palette;
 
   bool chosen = false;
   int option_count = sizeof(options) / sizeof(*options);
@@ -92,10 +110,10 @@ MenuChoice Menu::choose() {
           chosen = true;
         }
       }
-      if (digitalRead(RIGHT_BUTTON_PIN)) {
+      if (!disp.neopixels && digitalRead(RIGHT_BUTTON_PIN)) {
         chosen = true;
       }
-      if (digitalRead(LEFT_BUTTON_PIN)) {
+      if (!disp.neopixels && digitalRead(LEFT_BUTTON_PIN)) {
         option_index = (option_index + 1) % option_count;
       }
       if (option_index - display_offset < 0) {
@@ -137,6 +155,7 @@ MenuChoice Menu::choose() {
 
   // Animate clearing the display, to avoid a power surge
   Graphics::clear_rows(disp);
+  disp.palette = NULL;
   
   return options[option_index].choice;
 }

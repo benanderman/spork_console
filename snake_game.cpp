@@ -40,9 +40,10 @@ class Player {
   byte points_len;
   bool alive;
   Display& disp;
+  byte color;
   
-  Player(int x, int y, int len, Dir facing, Display& disp):
-    facing(facing), last_facing(facing), alive(true), disp(disp) {
+  Player(int x, int y, int len, Dir facing, Display& disp, byte color):
+    facing(facing), last_facing(facing), alive(true), disp(disp), color(color) {
     points_start = 0;
     points_len = len;
     Point point = Point(x, y);
@@ -102,7 +103,7 @@ class Player {
       if (point == other_head) {
         other_player.alive = false;
       }
-      disp.set_pixel(point.x, point.y, true);
+      disp.set_pixel(point.x, point.y, color);
     }
   }
 };
@@ -111,14 +112,22 @@ Player *players[2];
 
 bool SnakeGame::play() {
   randomSeed(analogRead(A0));
+
+  byte palette[][3] = {
+    {0, 0, 0},
+    {4, 16, 4},
+    {4, 4, 16},
+    {16, 4, 4},
+  };
+  disp.palette = palette;
   
   byte start_len = 3;
-  Player player1(disp.width / 2 - 1, 0, start_len, Dir::down, disp);
-  Player player2(disp.width / 2, disp.height - 1, start_len, Dir::up, disp);
+  Player player1(disp.width / 2 - 1, 0, start_len, Dir::down, disp, 1);
+  Player player2(disp.width / 2, disp.height - 1, start_len, Dir::up, disp, 2);
   players[0] = &player1;
   players[1] = &player2;
   player1.alive = controllers[0].is_connected();
-  player2.alive = controllers[1].is_connected();
+  player2.alive = controller_count > 1 && controllers[1].is_connected();
 
   Point food = Point::rand_in_disp(disp);
 
@@ -135,6 +144,7 @@ bool SnakeGame::play() {
     if (now > last_input + input_speed) {
       bool exit_game = handle_input();
       if (exit_game) {
+        disp.palette = NULL;
         return true;
       }
       last_input = now;
@@ -163,11 +173,13 @@ bool SnakeGame::play() {
         need_new_food = false;
       }
     }
-    disp.set_pixel(food.x, food.y, true);
+    disp.set_pixel(food.x, food.y, 3);
     
     disp.refresh();
     delay(1);
   }
+  
+  disp.palette = NULL;
   return false;
 }
 
