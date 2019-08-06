@@ -15,7 +15,8 @@ class Controller {
     down,
     right,
     up,
-    left
+    left,
+    __count
   };
   
   Controller(int ser_pin, int connected_pin);

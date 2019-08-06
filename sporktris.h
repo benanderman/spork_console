@@ -23,6 +23,14 @@ struct Tetromino {
   static Tetromino random_piece();
 };
 
+struct ButtonState {
+  bool pressed;
+  unsigned long last_change;
+  unsigned long last_register;
+
+  ButtonState(): pressed(false), last_change(0), last_register(0) {}
+};
+
 class Sporktris {
   public:
   Display& disp;
@@ -46,9 +54,11 @@ class Sporktris {
 
   bool paused;
 
-  unsigned long last_input_cycles[8];
-  
-  bool handle_input();
+  ButtonState button_states[Controller::Button::__count];
+
+  void update_button_states(unsigned long now);
+  bool handle_input(unsigned long now);
+  bool handle_button_press(Controller::Button button);
   bool cycle();
   void draw();
 

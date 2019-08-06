@@ -2,6 +2,9 @@
 #include "config.h"
 #include "graphics.h"
 
+// Minimum millisecons between button state changes
+#define BUTTON_DEBOUNCE_THRESHOLD 2
+
 Tetromino Tetromino::random_piece() {
   Tetromino pieces[] = {
     { // long
@@ -116,7 +119,7 @@ bool Sporktris::play() {
   this->board = board;
   need_new_piece = true;
   clearing_lines = false;
-  memset(last_input_cycles, 0, sizeof(last_input_cycles));
+  memset(button_states, 0, sizeof(button_states));
   line_count = 0;
   paused = false;
 
@@ -127,7 +130,7 @@ bool Sporktris::play() {
   while (alive) {
     unsigned long now = millis();
 
-    bool should_exit = handle_input();
+    bool should_exit = handle_input(now);
     if (should_exit) {
       Graphics::clear_rows(disp);
       disp.palette = NULL;
@@ -165,56 +168,134 @@ bool Sporktris::play() {
   return false;
 }
 
-bool Sporktris::handle_input() {
-  unsigned long now = millis();
+void Sporktris::update_button_states(unsigned long now) {
   Controller::update_state(&controller, 1);
-  if (controller.is_connected()) {
-    if (controller[Controller::Button::start]) {
-      return true;
-    }
-    if (controller[Controller::Button::select] && now > last_input_cycles[Controller::Button::select] + 500) {
-      last_input_cycles[Controller::Button::select] = now;
-      paused = !paused;
-      return false;
-    }
-    if (controller[Controller::Button::left] && now > last_input_cycles[Controller::Button::left] + 100) {
-      if (is_valid_position(cur_piece, piece_x - 1, piece_y)) {
-        piece_x--;
-        last_input_cycles[Controller::Button::left] = now;
-      }
-    } else if (controller[Controller::Button::right] && now > last_input_cycles[Controller::Button::right] + 100) {
-      if (is_valid_position(cur_piece, piece_x + 1, piece_y)) {
-        piece_x++;
-        last_input_cycles[Controller::Button::right] = now;
-      }
-    }
-    if (controller[Controller::Button::down] && now > last_input_cycles[Controller::Button::down] + 100) {
-      if (is_valid_position(cur_piece, piece_x, piece_y + 1)) {
-        piece_y++;
-        last_input_cycles[Controller::Button::down] = now;
-      }
-    }
-    if (controller[Controller::Button::up] && now > last_input_cycles[Controller::Button::up] + 300) {
-      while (is_valid_position(cur_piece, piece_x, piece_y + 1)) {
-        piece_y++;
-        last_input_cycles[Controller::Button::up] = now;
-      }
-    }
-    if (controller[Controller::Button::a] && now > last_input_cycles[Controller::Button::a] + 200) {
-      Tetromino new_piece = cur_piece.rotated(true);
-      if (is_valid_position(new_piece, piece_x, piece_y)) {
-        cur_piece = new_piece;
-        last_input_cycles[Controller::Button::a] = now;
-      }
-    } else if (controller[Controller::Button::b] && now > last_input_cycles[Controller::Button::b] + 200) {
-      Tetromino new_piece = cur_piece.rotated(false);
-      if (is_valid_position(new_piece, piece_x, piece_y)) {
-        cur_piece = new_piece;
-        last_input_cycles[Controller::Button::b] = now;
+
+  bool is_connected = controller.is_connected();
+
+  for (int b = 0; b < Controller::Button::__count; b++) {
+    bool new_state = is_connected && controller[(Controller::Button)b];
+    if (new_state != button_states[b].pressed) {
+      if (now - button_states[b].last_change > BUTTON_DEBOUNCE_THRESHOLD) {
+        button_states[b].pressed = new_state;
+        button_states[b].last_change = now;
+        button_states[b].last_register = 0;
       }
     }
   }
-  return false;
+}
+
+bool Sporktris::handle_input(unsigned long now) {
+  update_button_states(now);
+
+  struct ButtonRepeatDelays {
+    int initial;
+    int subsequent;
+  };
+
+  ButtonRepeatDelays button_conf[Controller::Button::__count];
+
+  button_conf[Controller::Button::b] = { .initial = 200, .subsequent = 130};
+  button_conf[Controller::Button::a] = { .initial = 200, .subsequent = 130};
+  button_conf[Controller::Button::select] = { .initial = 0, .subsequent = 0};
+  button_conf[Controller::Button::start] = { .initial = 0, .subsequent = 0};
+  button_conf[Controller::Button::down] = { .initial = 100, .subsequent = 50};
+  button_conf[Controller::Button::right] = { .initial = 200, .subsequent = 20};
+  button_conf[Controller::Button::up] = { .initial = 500, .subsequent = 30};
+  button_conf[Controller::Button::left] = { .initial = 200, .subsequent = 20};
+
+  bool should_exit = false;
+
+  for (int b = 0; b < Controller::Button::__count; b++) {
+    ButtonState& state = button_states[b];
+    ButtonRepeatDelays conf = button_conf[b];
+    
+    bool should_register = false;
+    if (state.pressed) {
+      unsigned long since_last_register = now - state.last_register;
+
+      // First register
+      if (state.last_register < state.last_change) {
+        should_register = true;
+        state.last_register = state.last_change;
+
+      // Second register
+      } else if (state.last_register == state.last_change) {
+        if (conf.initial && since_last_register >= conf.initial) {
+          should_register = true;
+          state.last_register += conf.initial;
+        }
+
+      // Third+ register
+      } else if (conf.subsequent && since_last_register >= conf.subsequent) {
+        should_register = true;
+        state.last_register += conf.subsequent;
+      }
+    }
+
+    if (should_register) {
+      should_exit = handle_button_press((Controller::Button)b);
+    }
+  }
+  
+  return should_exit;
+}
+
+bool Sporktris::handle_button_press(Controller::Button button) {
+  switch (button) {
+    case Controller::Button::start: {
+      return true;
+    }
+
+    case Controller::Button::select: {
+      paused = !paused;
+      return false;
+    }
+
+    case Controller::Button::left: {
+      if (is_valid_position(cur_piece, piece_x - 1, piece_y)) {
+        piece_x--;
+      }
+      return false;
+    }
+
+    case Controller::Button::right: {
+      if (is_valid_position(cur_piece, piece_x + 1, piece_y)) {
+        piece_x++;
+      }
+      return false;
+    }
+
+    case Controller::Button::down: {
+      if (is_valid_position(cur_piece, piece_x, piece_y + 1)) {
+        piece_y++;
+      }
+      return false;
+    }
+
+    case Controller::Button::up: {
+      while (is_valid_position(cur_piece, piece_x, piece_y + 1)) {
+        piece_y++;
+      }
+      return false;
+    }
+
+    case Controller::Button::a: {
+      Tetromino new_piece = cur_piece.rotated(true);
+      if (is_valid_position(new_piece, piece_x, piece_y)) {
+        cur_piece = new_piece;
+      }
+      return false;
+    }
+
+    case Controller::Button::b: {
+      Tetromino new_piece = cur_piece.rotated(false);
+      if (is_valid_position(new_piece, piece_x, piece_y)) {
+        cur_piece = new_piece;
+      }
+      return false;
+    }
+  }
 }
 
 bool Sporktris::cycle() {
