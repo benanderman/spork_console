@@ -20,7 +20,7 @@ class ObstacleGame {
   private:
   int player_x, player_y;
   bool handle_input();
-  void draw_obstacles(int cycle, int level);
+  void draw_obstacles(long cycle, int level);
 };
 
 #endif

@@ -4,6 +4,8 @@ int entity_size = 2;
 int obstacles[] = {0, 8, 3, 5, 1, 7, 2, 4, 8, 5, 1, 5, 2, 6, 2, 8, 4};
 
 bool ObstacleGame::play() {
+  randomSeed(millis());
+  
   byte palette[][3] = {
     {0, 0, 0},
     {4, 16, 4},
@@ -20,7 +22,7 @@ bool ObstacleGame::play() {
   player_y = disp.height - entity_size;
   bool alive = true;
 
-  unsigned long obstacle_cycle = 0;
+  long obstacle_cycle = 0;
   unsigned long last_obstacle_cycle = millis();
   unsigned long last_move = millis();
   int obstacle_speed = 250;
@@ -43,9 +45,10 @@ bool ObstacleGame::play() {
       obstacle_cycle++;
       last_obstacle_cycle = now;
 
-      if (obstacle_cycle % 20 == 0) {
+      if (obstacle_cycle % 35 == 0) {
         obstacle_speed *= 0.9;
         level++;
+        randomSeed(analogRead(A0) + millis());
       }
     }
 
@@ -87,11 +90,14 @@ bool ObstacleGame::handle_input() {
   return controller[Controller::Button::start];
 }
 
-void ObstacleGame::draw_obstacles(int cycle, int level) {
+void ObstacleGame::draw_obstacles(long cycle, int level) {
   int obstacle_count = sizeof(obstacles) / sizeof(*obstacles);
   for (int o = 0; o < obstacle_count; o++) {
     int total_height = (obstacle_count * 5);
-    int y = (cycle - o * 5) % total_height;
+    int y = (cycle - entity_size - o * 5) % total_height;
+    if (y < 1) {
+      obstacles[o] = random(disp.width - entity_size + 1);
+    }
     byte color = 2 + level % 6;
     disp.set_rect(obstacles[o], y, entity_size, entity_size, color);
   }
