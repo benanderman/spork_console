@@ -12,9 +12,6 @@ Controller controllers[2] = {
   Controller(CONTROLLER_2_SER_PIN, CONTROLLER_2_CONN_PIN)
 };
 
-Display main_display = Display(Display::Mode::U, 10, 20,
-  DISPLAY_RCLK_PIN, DISPLAY_SRCLK_PIN, DISPLAY_SER_PIN, DISPLAY_OE_PIN);
-
 void setup() {
   pinMode(DISPLAY_RCLK_PIN, OUTPUT);
   pinMode(DISPLAY_SRCLK_PIN, OUTPUT);
@@ -42,9 +39,9 @@ void loop() {
 
 bool neopixels_connected() {
   // Determine whether CONTROLLER_2_SER_PIN is connected to a pull-down resistor
-  pinMode(CONTROLLER_2_SER_PIN, INPUT_PULLUP);
-  bool read_val = digitalRead(CONTROLLER_2_SER_PIN);
-  pinMode(CONTROLLER_2_SER_PIN, INPUT);
+  pinMode(DISPLAY_NEOPIXEL_PIN, INPUT_PULLUP);
+  bool read_val = digitalRead(DISPLAY_NEOPIXEL_PIN);
+  pinMode(DISPLAY_NEOPIXEL_PIN, OUTPUT);
   return !read_val;
 }
 
@@ -58,7 +55,7 @@ void loop_neopixels() {
   digitalWrite(DISPLAY_RCLK_PIN, HIGH);
   digitalWrite(DISPLAY_RCLK_PIN, LOW);
   
-  pinMode(CONTROLLER_2_SER_PIN, OUTPUT);
+  pinMode(DISPLAY_NEOPIXEL_PIN, OUTPUT);
 
   Neopixels::ledSetup();
   

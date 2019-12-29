@@ -1,4 +1,5 @@
 #include "obstacle_game.h"
+#include "graphics.h"
 
 int entity_size = 2;
 int obstacles[] = {0, 8, 3, 5, 1, 7, 2, 4, 8, 5, 1, 5, 2, 6, 2, 8, 4};
@@ -15,6 +16,8 @@ bool ObstacleGame::play() {
     {10, 4, 10},
     {4, 10, 10},
     {8, 8, 8},
+    {0, 24, 0},
+    {0, 0, 0}
   };
   disp.palette = palette;
   
@@ -61,8 +64,7 @@ bool ObstacleGame::play() {
     delay(1);
   }
 
-  disp.palette = NULL;
-  return false;
+  return Graphics::end_game(disp, controller, 8, palette, 9);
 }
 
 bool ObstacleGame::handle_input() {

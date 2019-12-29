@@ -1,4 +1,5 @@
 #include "snake_game.h"
+#include "graphics.h"
 
 enum Dir {
   left,
@@ -75,33 +76,45 @@ class Player {
   }
 
   // Return whether food was eaten
-  bool cycle(Point food) {
+  bool cycle(Point food, bool wrap = false) {
     int total_points = sizeof(points) / sizeof(*points);
     int head_index = (points_start + points_len - 1) % total_points;
     int next_head = (head_index + 1) % total_points;
     Point new_point = points[head_index].shifted_by(facing);
+
+    bool ate_food = false;
+    if (new_point.x >= disp.width || new_point.y >= disp.height) {
+      if (!wrap) {
+        alive = false;
+      }
+      new_point.x = new_point.x == 255 ? disp.width - 1 : new_point.x % disp.width;
+      new_point.y = new_point.y == 255 ? disp.height - 1 : new_point.y % disp.height;
+    }
+    if (new_point == food) {
+      points_len++;
+      ate_food = true;
+    } else {
+      points_start = (points_start + 1) % total_points;
+    }
     points[next_head] = new_point;
     last_facing = facing;
     
-    if (new_point.x < 0 || new_point.y < 0 || new_point.x >= disp.width || new_point.y >= disp.height) {
-      alive = false;
-      return false;
-    } else if (new_point == food) {
-      points_len++;
-      return true;
-    } else {
-      points_start = (points_start + 1) % total_points;
-      return false;
-    }
+    return ate_food;
   }
 
-  void draw(Player &other_player) {
+  void draw(Player &other_player, bool can_overlap) {
     Point other_head = other_player.head();
     int total_points = sizeof(points) / sizeof(*points);
     for (int i = 0; i < points_len; i++) {
       Point point = points[(points_start + i) % total_points];
-      if (point == other_head) {
+      if (point == other_head && other_player.alive) {
         other_player.alive = false;
+        if (point == head()) {
+          alive = false;
+        }
+      }
+      if (!can_overlap && disp.get_pixel(point.x, point.y) == color) {
+        alive = false;
       }
       disp.set_pixel(point.x, point.y, color);
     }
@@ -118,6 +131,8 @@ bool SnakeGame::play() {
     {4, 16, 4},
     {4, 4, 16},
     {16, 4, 4},
+    {0, 0, 24},
+    {0, 0, 0},
   };
   disp.palette = palette;
   
@@ -138,6 +153,12 @@ bool SnakeGame::play() {
   
   while (player1.alive || player2.alive) {
     unsigned long now = millis();
+    bool single_player = player1.alive ^ player2.alive;
+
+    int winner = -1;
+    if (single_player) {
+      winner = player1.alive ? 0 : 1;
+    }
     
     disp.clear_all();
 
@@ -156,14 +177,17 @@ bool SnakeGame::play() {
       last_cycle = now;
       for (int i = 0; i < 2; i++) {
         if (players[i]->alive) {
-          need_new_food = need_new_food || players[i]->cycle(food);
+          need_new_food = need_new_food || players[i]->cycle(food, !single_player);
+          if (need_new_food && AUDIO_ENABLED) {
+            tone(AUDIO_PIN, i ? 349 : 392, 10);
+          }
         }
       }
     }
 
     for (int i = 0; i < 2; i++) {
-      if (players[i]->alive) {
-        players[i]->draw(*players[1 - i]);
+      if (players[i]->alive || i == winner) {
+        players[i]->draw(*players[1 - i], !single_player);
       }
     }
 
@@ -179,8 +203,7 @@ bool SnakeGame::play() {
     delay(1);
   }
   
-  disp.palette = NULL;
-  return false;
+  return Graphics::end_game(disp, controllers[0], 4, palette, 5);
 }
 
 bool SnakeGame::handle_input() {

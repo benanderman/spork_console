@@ -1,7 +1,9 @@
-#define DISPLAY_RCLK_PIN  0
-#define DISPLAY_SRCLK_PIN 1
-#define DISPLAY_SER_PIN   2
-#define DISPLAY_OE_PIN    11
+#define DISPLAY_RCLK_PIN      0
+#define DISPLAY_SRCLK_PIN     1
+#define DISPLAY_SER_PIN       2
+#define DISPLAY_OE_PIN        11
+#define AUDIO_PIN             11 // Only audio or display OE can be enabled, not both
+#define DISPLAY_NEOPIXEL_PIN  12
 
 #define CONSOLE_LEFT_BUTTON_PIN   3
 #define CONSOLE_RIGHT_BUTTON_PIN  4
@@ -16,6 +18,12 @@
 
 #define MAX_DISPLAY_PIXELS  200
 #define DISPLAY_INITIAL_BRIGHTNESS 8
+
+
+
+// Should be set to 
+#define AUDIO_ENABLED       1
+#define BRIGHTNESS_ENABLED  !AUDIO_ENABLED
 
 /* 
   Settings for neopixel display; should match CONTROLLER_2_SER_PIN:
@@ -36,4 +44,4 @@
 
 #define PIXEL_PORT  PORTB  // Port of the pin the pixels are connected to
 #define PIXEL_DDR   DDRB   // Port of the pin the pixels are connected to
-#define PIXEL_BIT   1      // Bit of the pin the pixels are connected to
+#define PIXEL_BIT   4      // Bit of the pin the pixels are connected to

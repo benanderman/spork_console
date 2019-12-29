@@ -11,7 +11,7 @@ byte Display::set_pixel(int x, int y, byte val) {
   if (index < 0 || index >= MAX_DISPLAY_PIXELS) {
     return false;
   }
-  bool old_value = state[index];
+  byte old_value = state[index];
   state[index] = val;
   
   return old_value;
@@ -84,7 +84,9 @@ void Display::refresh() {
 void Display::set_brightness(byte brightness) {
   // Output enable on 595 shift registers is on when grounded
   this->brightness = brightness;
-  analogWrite(OE_PIN, 255 - this->brightness);
+  if (BRIGHTNESS_ENABLED) {
+    analogWrite(OE_PIN, 255 - this->brightness);
+  }
 }
 
 byte Display::get_brightness() {

@@ -2,8 +2,8 @@
 #include "config.h"
 #include "graphics.h"
 
-// Minimum millisecons between button state changes
-#define BUTTON_DEBOUNCE_THRESHOLD 2
+// Minimum milliseconds between button state changes
+#define BUTTON_DEBOUNCE_THRESHOLD 20
 
 Tetromino Tetromino::random_piece() {
   Tetromino pieces[] = {
@@ -102,6 +102,7 @@ byte Tetromino::Rect::center_x() {
 
 bool Sporktris::play() {
   randomSeed(analogRead(A0));
+  random(7);
   byte palette[][3] = {
     {0, 0, 0},
     {16, 4, 4},
@@ -111,6 +112,8 @@ bool Sporktris::play() {
     {10, 4, 10},
     {4, 10, 10},
     {8, 8, 8},
+    {24, 0, 0},
+    {0, 0, 0}
   };
   disp.palette = palette;
   
@@ -161,11 +164,8 @@ bool Sporktris::play() {
 
     draw();
   }
-  Graphics::clear_rows(disp);
 
-  disp.palette = NULL;
-  
-  return false;
+  return Graphics::end_game(disp, controller, 8, palette, 9);
 }
 
 void Sporktris::update_button_states(unsigned long now) {
@@ -195,8 +195,8 @@ bool Sporktris::handle_input(unsigned long now) {
 
   ButtonRepeatDelays button_conf[Controller::Button::__count];
 
-  button_conf[Controller::Button::b] = { .initial = 200, .subsequent = 130};
-  button_conf[Controller::Button::a] = { .initial = 200, .subsequent = 130};
+  button_conf[Controller::Button::b] = { .initial = 500, .subsequent = 500};
+  button_conf[Controller::Button::a] = { .initial = 500, .subsequent = 500};
   button_conf[Controller::Button::select] = { .initial = 0, .subsequent = 0};
   button_conf[Controller::Button::start] = { .initial = 0, .subsequent = 0};
   button_conf[Controller::Button::down] = { .initial = 100, .subsequent = 50};
