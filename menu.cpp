@@ -37,6 +37,18 @@ static const char PROGMEM sporktris_graphic[] =
       "OO_O_OOOOO"
       "OO_OOOOO_O";
 
+static const char PROGMEM life_graphic[] =
+      "__________"
+      "__________"
+      "__________"
+      "__0_______"
+      "___00_____"
+      "__00______"
+      "_______0__"
+      "_____0_0__"
+      "______00__"
+      "__________";
+
 struct Option {
   MenuChoice choice;
 
@@ -54,7 +66,7 @@ struct Option {
         if (val) {
           color = selected ? 2 + choice : 1;
         } else {
-          color = selected ? 5 : 0;
+          color = selected ? 6 : 0;
         }
       }
       disp.set_pixel(x, y, color);
@@ -66,6 +78,7 @@ struct Option {
       case snake: return pgm_read_byte(&snake_graphic[index]);
       case obstacle: return pgm_read_byte(&obstacle_graphic[index]);
       case sporktris: return pgm_read_byte(&sporktris_graphic[index]);
+      case life: return pgm_read_byte(&life_graphic[index]);
     }
   }
 };
@@ -74,7 +87,8 @@ MenuChoice Menu::choose() {
   Option options[] = {
     Option(MenuChoice::snake),
     Option(MenuChoice::obstacle),
-    Option(MenuChoice::sporktris)
+    Option(MenuChoice::sporktris),
+    Option(MenuChoice::life)
   };
 
   byte palette[][3] = {
@@ -83,6 +97,7 @@ MenuChoice Menu::choose() {
     {0, 0, 24},
     {0, 24, 0},
     {24, 0, 0},
+    {8, 16, 0},
     {1, 1, 1},
   };
   disp.palette = palette;

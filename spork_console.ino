@@ -5,6 +5,7 @@
 #include "obstacle_game.h"
 #include "snake_game.h"
 #include "sporktris.h"
+#include "life.h"
 #include "neopixels.h"
 
 Controller controllers[2] = {
@@ -97,6 +98,11 @@ void loop(Display& disp) {
       case MenuChoice::sporktris: {
         Sporktris sporktris(disp, controllers[0]);
         while (!sporktris.play()) {}
+        break;
+      }
+      case MenuChoice::life: {
+        Life life(disp, controllers[0]);
+        while (!life.play()) {}
         break;
       }
     }
