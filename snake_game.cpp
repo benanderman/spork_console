@@ -1,5 +1,6 @@
 #include "snake_game.h"
 #include "graphics.h"
+#include "pitches.h"
 
 enum Dir {
   left,
@@ -179,7 +180,7 @@ bool SnakeGame::play() {
         if (players[i]->alive) {
           need_new_food = need_new_food || players[i]->cycle(food, !single_player);
           if (need_new_food && AUDIO_ENABLED) {
-            tone(AUDIO_PIN, i ? 349 : 392, 10);
+            tone(AUDIO_PIN, i ? NOTE_F4 : NOTE_D5, 10);
           }
         }
       }

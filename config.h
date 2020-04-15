@@ -19,14 +19,15 @@
 #define MAX_DISPLAY_PIXELS  200
 #define DISPLAY_INITIAL_BRIGHTNESS 8
 
+#define RGB_CONSOLE 0
 
-
-// Should be set to 
 #define AUDIO_ENABLED       1
 #define BRIGHTNESS_ENABLED  !AUDIO_ENABLED
 
+#define TONE_IF_ENABLED(note, duration) if (AUDIO_ENABLED) tone(AUDIO_PIN, note, duration)
+
 /* 
-  Settings for neopixel display; should match CONTROLLER_2_SER_PIN:
+  Settings for neopixel display; should match DISPLAY_NEOPIXEL_PIN:
 */
 
 // These values depend on which pin your string is connected to and what board you are using 
@@ -40,8 +41,16 @@
 
 // You'll need to look up the port/bit combination for other boards. 
 
-// Note that you could also include the DigitalWriteFast header file to not need to to this lookup.
+// Note that you could also include the DigitalWriteFast header file to not need to do this lookup.
 
 #define PIXEL_PORT  PORTB  // Port of the pin the pixels are connected to
 #define PIXEL_DDR   DDRB   // Port of the pin the pixels are connected to
 #define PIXEL_BIT   4      // Bit of the pin the pixels are connected to
+
+
+#if RGB_CONSOLE
+  #define DISPLAY_NEOPIXEL_PIN  2
+  #define PIXEL_PORT  PORTD
+  #define PIXEL_DDR   DDRD
+  #define PIXEL_BIT   2
+#endif

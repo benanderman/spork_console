@@ -36,7 +36,7 @@ class Neopixels {
   
   static inline void sendBit(bool bitVal) {
     
-      if (bitVal) {        // 1 bit
+    if (bitVal) {        // 1 bit
         
       asm volatile (
         "sbi %[port], %[bit] \n\t"        // Set the output bit
@@ -52,10 +52,9 @@ class Neopixels {
         [bit]   "I" (PIXEL_BIT),
         [onCycles]  "I" (NS_TO_CYCLES(T1H) - 2),    // 1-bit width less overhead  for the actual bit setting, note that this delay could be longer and everything would still work
         [offCycles]   "I" (NS_TO_CYCLES(T1L) - 2)     // Minimum interbit delay. Note that we probably don't need this at all since the loop overhead will be enough, but here for correctness
-  
       );
                                     
-      } else {          // 0 bit
+    } else {          // 0 bit
   
       // **************************************************************************
       // This line is really the only tight goldilocks timing in the whole program!
@@ -76,16 +75,13 @@ class Neopixels {
         [bit]   "I" (PIXEL_BIT),
         [onCycles]  "I" (NS_TO_CYCLES(T0H) - 2),
         [offCycles] "I" (NS_TO_CYCLES(T0L) - 2)
-  
       );
-        
-      }
+    }
       
       // Note that the inter-bit gap can be as long as you want as long as it doesn't exceed the 5us reset timeout (which is A long time)
       // Here I have been generous and not tried to squeeze the gap tight but instead erred on the side of lots of extra time.
       // This has thenice side effect of avoid glitches on very long strings becuase 
   
-      
   }  
     
   static inline void sendByte( unsigned char byte ) {

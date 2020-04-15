@@ -1,6 +1,7 @@
 #include "sporktris.h"
 #include "config.h"
 #include "graphics.h"
+#include "pitches.h"
 
 // Minimum milliseconds between button state changes
 #define BUTTON_DEBOUNCE_THRESHOLD 20
@@ -242,6 +243,10 @@ bool Sporktris::handle_input(unsigned long now) {
 }
 
 bool Sporktris::handle_button_press(Controller::Button button) {
+  if (paused && button != Controller::Button::start && button != Controller::Button::select) {
+    return false;
+  }
+  
   switch (button) {
     case Controller::Button::start: {
       return true;
@@ -331,6 +336,7 @@ bool Sporktris::cycle() {
   } else {
     // Apply piece to the board
     int top = disp.height;
+    int lines_just_cleared = 0;
     for (int i = 0; i < sizeof(cur_piece.points) / sizeof(*cur_piece.points); i++) {
       int px = cur_piece.points[i][0] + piece_x;
       int py = cur_piece.points[i][1] + piece_y;
@@ -350,13 +356,19 @@ bool Sporktris::cycle() {
         memset(board + py * disp.width, false, disp.width);
         clearing_lines = true;
         line_count++;
+        lines_just_cleared++;
       }
     }
+    
+    int tones[] = {NOTE_B0, NOTE_C6, NOTE_E6, NOTE_G6, NOTE_A6};
+    TONE_IF_ENABLED(tones[lines_just_cleared], 100);
+    
     // The player is only alive if the top of the piece that just landed is fully on the board
     alive = top >= 0;
     
     need_new_piece = true;
   }
+  
   return alive;
 }
 
