@@ -40,13 +40,13 @@ static const char PROGMEM sporktris_graphic[] =
 static const char PROGMEM life_graphic[] =
       "__________"
       "__________"
-      "__________"
       "__0_______"
       "___00_____"
       "__00______"
       "_______0__"
       "_____0_0__"
       "______00__"
+      "__________"
       "__________";
 
 struct Option {
@@ -103,14 +103,14 @@ MenuChoice Menu::choose() {
   disp.palette = palette;
 
   bool chosen = false;
-  int option_count = sizeof(options) / sizeof(*options);
+  const int option_count = sizeof(options) / sizeof(*options);
   unsigned long last_change = millis();
   unsigned long last_brightness_change = millis();
   while (!chosen) {
     unsigned long now = millis();
+    int old_index = option_index;
     Controller::update_state(controllers, controller_count);
     if (now > last_change + 300) {
-      int old_index = option_index;
       for (int c = 0; c < controller_count; c++) {
         if (!controllers[c].is_connected()) {
           continue;
@@ -130,12 +130,6 @@ MenuChoice Menu::choose() {
       }
       if (!disp.neopixels && digitalRead(LEFT_BUTTON_PIN)) {
         option_index = (option_index + 1) % option_count;
-      }
-      if (option_index - display_offset < 0) {
-        display_offset = option_index;
-      }
-      if (option_index - display_offset >= 2) {
-        display_offset = option_index - 1;
       }
       if (old_index != option_index) {
         last_change = now;
@@ -160,10 +154,27 @@ MenuChoice Menu::choose() {
         last_brightness_change = now;
       }
     }
-    
-    for (int i = 0; i < sizeof(options) / sizeof(*options); i++) {
-      options[i].draw(disp, 0, 10 * (i - display_offset), i == option_index);
+
+    bool looping = abs(option_index - old_index) > 1;
+    int offset = (option_index - old_index) * 10;
+    offset = looping ? -offset / option_count : offset;
+    int increment = offset > 0 ? -1 : 1;
+    for (; offset != 0; offset += increment) {
+      disp.clear_all();
+      for (int i = option_index - 2; i <= option_index + 2; i++) {
+        int looped_i = (i + option_count) % option_count;
+        options[looped_i].draw(disp, 0, 10 * (i - option_index) + (disp.height / 4) + offset, false);
+      }
+      disp.refresh();
+      delay(15);
     }
+
+    disp.clear_all();
+    for (int i = option_index - 1; i <= option_index + 1; i++) {
+      int looped_i = (i + option_count) % option_count;
+      options[looped_i].draw(disp, 0, 10 * (i - option_index) + (disp.height / 4), i == option_index);
+    }
+    
     disp.refresh();
     delay(10);
   }
