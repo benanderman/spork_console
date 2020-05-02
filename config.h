@@ -19,9 +19,9 @@
 #define MAX_DISPLAY_PIXELS  200
 #define DISPLAY_INITIAL_BRIGHTNESS 8
 
-#define RGB_CONSOLE 0
+#define RGB_CONSOLE 1
 
-#define AUDIO_ENABLED       1
+#define AUDIO_ENABLED       0
 #define BRIGHTNESS_ENABLED  !AUDIO_ENABLED
 
 #define TONE_IF_ENABLED(note, duration) if (AUDIO_ENABLED) tone(AUDIO_PIN, note, duration)
@@ -49,6 +49,7 @@
 
 
 #if RGB_CONSOLE
+  #define BRIGHTNESS_ENABLED 0
   #define DISPLAY_NEOPIXEL_PIN  2
   #define PIXEL_PORT  PORTD
   #define PIXEL_DDR   DDRD

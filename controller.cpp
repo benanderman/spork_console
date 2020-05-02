@@ -9,6 +9,9 @@ bool Controller::operator[](Button button) const {
 }
 
 bool Controller::is_connected() {
+  if (RGB_CONSOLE && CONNECTED_PIN == CONTROLLER_1_CONN_PIN) {
+    return true;
+  }
   return digitalRead(CONNECTED_PIN);
 }
 

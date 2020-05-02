@@ -39,6 +39,9 @@ void loop() {
 }
 
 bool neopixels_connected() {
+  if (RGB_CONSOLE) {
+    return true;
+  }
   // Determine whether CONTROLLER_2_SER_PIN is connected to a pull-down resistor
   pinMode(DISPLAY_NEOPIXEL_PIN, INPUT_PULLUP);
   bool read_val = digitalRead(DISPLAY_NEOPIXEL_PIN);
