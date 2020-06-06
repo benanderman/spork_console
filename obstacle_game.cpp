@@ -64,7 +64,7 @@ bool ObstacleGame::play() {
     delay(1);
   }
 
-  return Graphics::end_game(disp, controller, 8, palette, 9);
+  return Graphics::end_game(disp, &controller, 1, 8, palette, 9);
 }
 
 bool ObstacleGame::handle_input() {

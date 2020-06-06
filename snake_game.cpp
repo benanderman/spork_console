@@ -204,7 +204,7 @@ bool SnakeGame::play() {
     delay(1);
   }
   
-  return Graphics::end_game(disp, controllers[0], 4, palette, 5);
+  return Graphics::end_game(disp, controllers, controller_count, 4, palette, 5);
 }
 
 bool SnakeGame::handle_input() {

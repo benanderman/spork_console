@@ -137,7 +137,7 @@ MenuChoice Menu::choose() {
     }
 
     // Update brightness with left and right
-    if (now > last_brightness_change + 100) {
+    if (now > last_brightness_change + 500) {
       byte brightness = disp.get_brightness();
       bool left = false;
       bool right = false;
@@ -176,7 +176,7 @@ MenuChoice Menu::choose() {
     }
     
     disp.refresh();
-    delay(10);
+    delay(1);
   }
 
   // Animate clearing the display, to avoid a power surge

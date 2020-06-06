@@ -48,18 +48,24 @@ void Graphics::explode_pixels(Display& disp, byte (*palette)[3], byte swap_index
   }
 }
 
-bool Graphics::end_game(Display& disp, Controller& controller, byte color, byte (*palette)[3], byte swap_index) {
+bool Graphics::end_game(Display& disp, Controller *controllers, int controller_count, byte color, byte (*palette)[3], byte swap_index) {
   if (disp.neopixels) {
     animate_color_rows(disp, 0, color);
   }
   bool should_exit = false;
+  bool done = false;
   while (true) {
-    Controller::update_state(&controller, 1);
-    if (controller[Controller::Button::select] || controller[Controller::Button::a]) {
-      break;
+    Controller::update_state(controllers, controller_count);
+    for (int i = 0; i < controller_count; i++) {
+      if (controllers[i][Controller::Button::select] || controllers[i][Controller::Button::a]) {
+        done = true;
+      }
+      if (controllers[i][Controller::Button::start]) {
+        should_exit = true;
+        done = true;
+      }
     }
-    if (controller[Controller::Button::start]) {
-      should_exit = true;
+    if (done) {
       break;
     }
     delay(1);

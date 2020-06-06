@@ -62,10 +62,11 @@ void Display::refresh() {
 
     if (neopixels) {
       if (palette) {
-        Neopixels::sendPixel(palette[val][0], palette[val][1], palette[val][2]);
+        byte m = brightness;
+        Neopixels::sendPixel(palette[val][0] * m, palette[val][1] * m, palette[val][2] * m);
       } else {
-        byte pixelBrightness = (val ? brightness : 0);
-        Neopixels::sendPixel(pixelBrightness, pixelBrightness, pixelBrightness);
+        byte pixel_brightness = (val ? brightness : 0);
+        Neopixels::sendPixel(pixel_brightness, pixel_brightness, pixel_brightness);
       }
     } else {
       digitalWrite(SER_PIN, val);

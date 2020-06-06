@@ -19,11 +19,10 @@ class Controller {
     __count
   };
   
-  Controller(int ser_pin, int connected_pin);
+  Controller(int ser_pin, int connected_pin, Controller *aux);
   
   bool operator[](Button button) const;
   
-  // Unreliable due to lack of pull-down resistor
   bool is_connected();
   
   static void update_state(Controller controllers[], int count);
@@ -31,6 +30,8 @@ class Controller {
   private:
   int SER_PIN;
   int CONNECTED_PIN;
+
+  Controller *aux;
   
   byte button_state;
 };

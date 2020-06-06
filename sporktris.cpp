@@ -166,7 +166,7 @@ bool Sporktris::play() {
     draw();
   }
 
-  return Graphics::end_game(disp, controller, 8, palette, 9);
+  return Graphics::end_game(disp, &controller, 1, 8, palette, 9);
 }
 
 void Sporktris::update_button_states(unsigned long now) {

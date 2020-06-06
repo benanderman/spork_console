@@ -12,7 +12,7 @@ class Graphics {
   static void explode_pixels(Display& disp, byte (*palette)[3], byte swap_index, byte max_value);
 
   // Returns whether the game should exit
-  static bool end_game(Display &disp, Controller& controller, byte color, byte (*palette)[3], byte swap_index);
+  static bool end_game(Display &disp, Controller *controllers, int controller_count, byte color, byte (*palette)[3], byte swap_index);
 };
 
 #endif

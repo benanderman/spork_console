@@ -8,19 +8,33 @@
 #include "life.h"
 #include "neopixels.h"
 
+// For controlling via internet, etc.; not a real controller
+Controller aux_controller = Controller(CONTROLLER_AUX_SER_PIN, CONTROLLER_AUX_CONN_PIN, NULL);
+
 Controller controllers[2] = {
-  Controller(CONTROLLER_1_SER_PIN, CONTROLLER_1_CONN_PIN),
-  Controller(CONTROLLER_2_SER_PIN, CONTROLLER_2_CONN_PIN)
+  Controller(CONTROLLER_1_SER_PIN, CONTROLLER_1_CONN_PIN, CONTROLLER_AUX_ENABLED ? &aux_controller : NULL),
+  Controller(CONTROLLER_2_SER_PIN, CONTROLLER_2_CONN_PIN, NULL)
 };
 
 void setup() {
-  pinMode(DISPLAY_RCLK_PIN, OUTPUT);
-  pinMode(DISPLAY_SRCLK_PIN, OUTPUT);
-  pinMode(DISPLAY_SER_PIN, OUTPUT);
-  pinMode(DISPLAY_OE_PIN, OUTPUT);
-  
-  pinMode(CONSOLE_LEFT_BUTTON_PIN, INPUT);
-  pinMode(CONSOLE_RIGHT_BUTTON_PIN, INPUT);
+  if (SHIFT_REGISTER_DISPLAY) {
+    pinMode(DISPLAY_RCLK_PIN, OUTPUT);
+    pinMode(DISPLAY_SRCLK_PIN, OUTPUT);
+    pinMode(DISPLAY_SER_PIN, OUTPUT);
+    pinMode(DISPLAY_OE_PIN, OUTPUT);
+  }
+
+  if (CONTROLLER_AUX_ENABLED) {
+    pinMode(CONTROLLER_AUX_CONN_PIN, INPUT_PULLUP);
+    pinMode(CONTROLLER_AUX_SHLD_PIN, OUTPUT);
+    pinMode(CONTROLLER_AUX_CLK_PIN, OUTPUT);
+    pinMode(CONTROLLER_AUX_SER_PIN, INPUT);
+  }
+
+  if (LEFT_RIGHT_BUTTONS_ENABLED) {
+    pinMode(CONSOLE_LEFT_BUTTON_PIN, INPUT);
+    pinMode(CONSOLE_RIGHT_BUTTON_PIN, INPUT);
+  }
 
   pinMode(CONTROLLER_SHLD_PIN, OUTPUT);
   pinMode(CONTROLLER_CLK_PIN, OUTPUT);
@@ -39,7 +53,7 @@ void loop() {
 }
 
 bool neopixels_connected() {
-  if (RGB_CONSOLE) {
+  if (HARDWARE == RGB_CONSOLE) {
     return true;
   }
   // Determine whether CONTROLLER_2_SER_PIN is connected to a pull-down resistor
@@ -51,13 +65,15 @@ bool neopixels_connected() {
 
 void loop_neopixels() {
   // Clear the internal display
-  digitalWrite(DISPLAY_SER_PIN, LOW);
-  for (int i = 0; i < MAX_DISPLAY_PIXELS; i++) {
-    digitalWrite(DISPLAY_SRCLK_PIN, HIGH);
-    digitalWrite(DISPLAY_SRCLK_PIN, LOW);
+  if (SHIFT_REGISTER_DISPLAY) {
+    digitalWrite(DISPLAY_SER_PIN, LOW);
+    for (int i = 0; i < MAX_DISPLAY_PIXELS; i++) {
+      digitalWrite(DISPLAY_SRCLK_PIN, HIGH);
+      digitalWrite(DISPLAY_SRCLK_PIN, LOW);
+    }
+    digitalWrite(DISPLAY_RCLK_PIN, HIGH);
+    digitalWrite(DISPLAY_RCLK_PIN, LOW);
   }
-  digitalWrite(DISPLAY_RCLK_PIN, HIGH);
-  digitalWrite(DISPLAY_RCLK_PIN, LOW);
   
   pinMode(DISPLAY_NEOPIXEL_PIN, OUTPUT);
 
@@ -79,7 +95,7 @@ void loop(Display& disp) {
   disp.set_brightness(DISPLAY_INITIAL_BRIGHTNESS);
 
   int controller_count = sizeof(controllers) / sizeof(*controllers);
-  if (disp.neopixels) {
+  if (HARDWARE == ARCADE_CABINET) {
     controller_count = 1;
   }
   
