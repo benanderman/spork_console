@@ -4,6 +4,14 @@
 #include "display.h"
 #include "controller.h"
 
+struct ButtonState {
+  bool pressed;
+  unsigned long last_change;
+  unsigned long last_register;
+
+  ButtonState(): pressed(false), last_change(0), last_register(0) {}
+};
+
 struct Tetromino {
   struct Rect {
     byte x, y, x2, y2;
@@ -21,14 +29,6 @@ struct Tetromino {
   Rect bounding_rect();
 
   static Tetromino random_piece();
-};
-
-struct ButtonState {
-  bool pressed;
-  unsigned long last_change;
-  unsigned long last_register;
-
-  ButtonState(): pressed(false), last_change(0), last_register(0) {}
 };
 
 class Sporktris {
