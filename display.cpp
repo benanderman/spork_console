@@ -31,7 +31,7 @@ void Display::clear_all() {
   memset(&state, 0, MAX_DISPLAY_PIXELS);
 }
 
-void Display::refresh() {
+void Display::refresh(get_pixel_func_t get_pixel_func) {
   int total_pixels = width * height;
   for (int p = 0; p < total_pixels; p++) {
     int i = p;
@@ -63,7 +63,17 @@ void Display::refresh() {
     if (neopixels) {
       if (palette) {
         byte m = brightness;
-        Neopixels::sendPixel(palette[val][0] * m, palette[val][1] * m, palette[val][2] * m);
+        byte *pixel = palette[val];
+        byte r = pixel[0];
+        byte g = pixel[1];
+        byte b = pixel[2];
+        if (get_pixel_func) {
+          uint32_t p = get_pixel_func(x, y);
+          r = (p >> 24) & 0xFF;
+          g = (p >> 16) & 0xFF;
+          b = (p >>  8) & 0xFF;
+        }
+        Neopixels::sendPixel(r * m, g * m, b * m);
       } else {
         byte pixel_brightness = (val ? brightness : 0);
         Neopixels::sendPixel(pixel_brightness, pixel_brightness, pixel_brightness);

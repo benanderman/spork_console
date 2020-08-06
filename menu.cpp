@@ -102,6 +102,8 @@ MenuChoice Menu::choose() {
   };
   disp.palette = palette;
 
+  get_pixel_func_t get_pixel_func = NULL;
+
   bool chosen = false;
   const int option_count = sizeof(options) / sizeof(*options);
   unsigned long last_change = millis();
@@ -123,6 +125,12 @@ MenuChoice Menu::choose() {
         }
         if (controllers[c][Controller::Button::select]) {
           chosen = true;
+        }
+        if (controllers[c][Controller::Button::a]) {
+          get_pixel_func = &Graphics::rainbow_cycle;
+        }
+        if (controllers[c][Controller::Button::b]) {
+          get_pixel_func = NULL;
         }
       }
       if (!disp.neopixels && digitalRead(RIGHT_BUTTON_PIN)) {
@@ -175,8 +183,8 @@ MenuChoice Menu::choose() {
       options[looped_i].draw(disp, 0, 10 * (i - option_index) + (disp.height / 4), i == option_index);
     }
     
-    disp.refresh();
-    delay(1);
+    disp.refresh(get_pixel_func);
+    delay(4);
   }
 
   // Animate clearing the display, to avoid a power surge

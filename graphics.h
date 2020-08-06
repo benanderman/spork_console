@@ -13,6 +13,8 @@ class Graphics {
 
   // Returns whether the game should exit
   static bool end_game(Display &disp, Controller *controllers, int controller_count, byte color, byte (*palette)[3], byte swap_index);
+
+  static uint32_t rainbow_cycle(int x, int y);
 };
 
 #endif
