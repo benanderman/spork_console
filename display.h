@@ -25,7 +25,7 @@ class Display {
   byte (*palette)[3];
 
   Display(Mode mode, int width, int height,
-    int rclk_pin, int srclk_pin, int ser_pin, int oe_pin, bool neopixels = false) :
+    int rclk_pin, int srclk_pin, int ser_pin, int oe_pin, bool neopixels) :
     mode(mode), width(width), height(height),
     RCLK_PIN(rclk_pin), SRCLK_PIN(srclk_pin), SER_PIN(ser_pin), OE_PIN(oe_pin),
     neopixels(neopixels), palette(NULL) {}

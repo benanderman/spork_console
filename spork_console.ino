@@ -44,14 +44,6 @@ void setup() {
   pinMode(CONTROLLER_2_CONN_PIN, INPUT);
 }
 
-void loop() {
-  if (neopixels_connected()) {
-    loop_neopixels();
-  } else {
-    loop_internal_disp();
-  }
-}
-
 bool neopixels_connected() {
   if (HARDWARE == RGB_CONSOLE) {
     return true;
@@ -63,7 +55,7 @@ bool neopixels_connected() {
   return !read_val;
 }
 
-void loop_neopixels() {
+void setup_neopixels() {
   // Clear the internal display
   if (SHIFT_REGISTER_DISPLAY) {
     digitalWrite(DISPLAY_SER_PIN, LOW);
@@ -78,19 +70,17 @@ void loop_neopixels() {
   pinMode(DISPLAY_NEOPIXEL_PIN, OUTPUT);
 
   Neopixels::ledSetup();
-  
-  Display disp(Display::Mode::rows, 10, 20,
-    DISPLAY_RCLK_PIN, DISPLAY_SRCLK_PIN, DISPLAY_SER_PIN, DISPLAY_OE_PIN, true);
-  loop(disp);
 }
 
-void loop_internal_disp() {
+void loop() {
+  bool use_neopixels = neopixels_connected();
+
+  if (neopixels_connected()) {
+    setup_neopixels();
+  }
+
   Display disp(Display::Mode::U, 10, 20,
-    DISPLAY_RCLK_PIN, DISPLAY_SRCLK_PIN, DISPLAY_SER_PIN, DISPLAY_OE_PIN);
-  loop(disp);
-}
-
-void loop(Display& disp) {
+    DISPLAY_RCLK_PIN, DISPLAY_SRCLK_PIN, DISPLAY_SER_PIN, DISPLAY_OE_PIN, use_neopixels);
   
   disp.set_brightness(DISPLAY_INITIAL_BRIGHTNESS);
 
