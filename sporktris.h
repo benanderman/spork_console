@@ -3,14 +3,7 @@
 
 #include "display.h"
 #include "controller.h"
-
-struct ButtonState {
-  bool pressed;
-  unsigned long last_change;
-  unsigned long last_register;
-
-  ButtonState(): pressed(false), last_change(0), last_register(0) {}
-};
+#include "input_processor.h"
 
 struct Tetromino {
   struct Rect {
@@ -31,13 +24,11 @@ struct Tetromino {
   static Tetromino random_piece();
 };
 
-class Sporktris {
+class Sporktris: public InputProcessor {
   public:
   Display& disp;
-  Controller controller;
 
-  Sporktris(Display& disp, Controller controller):
-    disp(disp), controller(controller) {}
+  Sporktris(Display& disp, Controller *controllers, int controller_count);
 
   bool play();
 
@@ -53,12 +44,8 @@ class Sporktris {
   int line_count;
 
   bool paused;
-
-  ButtonState button_states[Controller::Button::__count];
-
-  void update_button_states(unsigned long now);
-  bool handle_input(unsigned long now);
-  bool handle_button_press(Controller::Button button);
+  
+  bool handle_button_down(Controller::Button button, int controller_index);
   bool cycle();
   void draw();
 

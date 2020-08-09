@@ -75,11 +75,12 @@ void setup_neopixels() {
 void loop() {
   bool use_neopixels = neopixels_connected();
 
-  if (neopixels_connected()) {
+  if (use_neopixels) {
     setup_neopixels();
   }
 
-  Display disp(Display::Mode::U, 10, 20,
+  Display::Mode disp_mode = use_neopixels ? Display::Mode::rows : Display::Mode::U;
+  Display disp(disp_mode, 10, 20,
     DISPLAY_RCLK_PIN, DISPLAY_SRCLK_PIN, DISPLAY_SER_PIN, DISPLAY_OE_PIN, use_neopixels);
   
   disp.set_brightness(DISPLAY_INITIAL_BRIGHTNESS);
@@ -105,12 +106,12 @@ void loop() {
         break;
       }
       case MenuChoice::sporktris: {
-        Sporktris sporktris(disp, controllers[0]);
+        Sporktris sporktris(disp, controllers, controller_count);
         while (!sporktris.play()) {}
         break;
       }
       case MenuChoice::life: {
-        Life life(disp, controllers[0]);
+        Life life(disp, controllers, controller_count);
         while (!life.play()) {}
         break;
       }
