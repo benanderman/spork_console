@@ -9,8 +9,9 @@ typedef uint32_t (*get_pixel_func_t)(int x, int y);
 class Display {
   public:
   enum Mode {
-    rows,
-    U
+    rows, // Left to right, top to bottom rows
+    U, // Two columns of rows, top to bottom, then bottom to top
+    N // Columns that alternate top to bottom, bottom to top
   };
 
   int RCLK_PIN;

@@ -56,6 +56,14 @@ void Display::refresh(get_pixel_func_t get_pixel_func) {
         }
         break;
       }
+      case Mode::N: {
+        x = i / height;
+        y = i % height;
+        if (x % 2 == 1) {
+          y = height - y;
+        }
+        break;
+      }
     }
     
     byte val = get_pixel(x, y);
