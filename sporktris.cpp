@@ -65,8 +65,27 @@ Tetromino Tetromino::random_piece() {
       .points = { {0,2}, {1,2}, {2,2}, {1,3} }
     }
   };
-  int index = random(sizeof(pieces) / sizeof(*pieces));
-  return pieces[index];
+  const byte pieces_count = sizeof(pieces) / sizeof(*pieces);
+
+  static byte random_set[pieces_count * 2];
+  const byte random_set_count = sizeof(random_set) / sizeof(*random_set);
+  static byte index = 0;
+  if (index == 0) {
+    for (byte i = 0; i < random_set_count; i++) {
+      random_set[i] = i % pieces_count;
+    }
+    for (byte i = 0; i < random_set_count; i++) {
+      byte temp = random_set[i];
+      byte swap_index = random(random_set_count - i) + i;
+      random_set[i] = random_set[swap_index];
+      random_set[swap_index] = temp;
+    }
+  }
+
+  Tetromino result = pieces[random_set[index]];
+  index = (index + 1) % random_set_count;
+
+  return result;
 }
 
 Tetromino Tetromino::rotated(bool cw) {
