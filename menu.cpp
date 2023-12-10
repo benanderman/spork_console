@@ -150,7 +150,7 @@ MenuChoice Menu::choose() {
       bool left = false;
       bool right = false;
       for (int c = 0; c < controller_count; c++) {
-        if (!controllers[c].is_connected()) {
+        if (!controllers[c].is_connected() || !controllers[c][Controller::Button::start]) {
           continue;
         }
         left = left || controllers[c][Controller::Button::left];
