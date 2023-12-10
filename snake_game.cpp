@@ -149,7 +149,7 @@ bool SnakeGame::play() {
 
   unsigned long last_cycle = millis();
   unsigned long last_input = millis();
-  int game_speed = 130;
+  int game_speed = 150;
   int input_speed = 5;
   
   while (player1.alive || player2.alive) {
@@ -184,6 +184,10 @@ bool SnakeGame::play() {
           }
         }
       }
+    }
+
+    if (need_new_food) {
+      game_speed *= 0.98;
     }
 
     for (int i = 0; i < 2; i++) {
