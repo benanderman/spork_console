@@ -154,7 +154,6 @@ bool Sporktris::play() {
   this->board = board;
   need_new_piece = true;
   clearing_lines = false;
-  memset(button_states, 0, sizeof(button_states));
   line_count = 0;
   paused = false;
 

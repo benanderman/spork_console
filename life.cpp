@@ -114,9 +114,9 @@ void Life::move_cursor(int x, int y, int controller_index) {
   disp.set_pixel(cursor_x, cursor_y, pixel);
 
   if (controller_index != -1) {
-    if (button_states[controller_index][Controller::Button::a].is_pressed()) {
+    if (controllers[controller_index].handler_states[Controller::Button::a].is_pressed()) {
       set_cell(cursor_x, cursor_y, true);
-    } else if (button_states[controller_index][Controller::Button::b].is_pressed()) {
+    } else if (controllers[controller_index].handler_states[Controller::Button::b].is_pressed()) {
       set_cell(cursor_x, cursor_y, false);
     }
   }
