@@ -3,20 +3,28 @@
 
 #include "controller.h"
 
-// This is a WIP; want to refactor Sporktris to inherit from this, then
-// use the same functionality in other games
+enum ButtonPressedState {
+  not_pressed,
+  pressed_zero_registers,
+  pressed_one_register,
+  pressed_more_registers,
+} __attribute__((packed));
 
 struct ButtonState {
-  bool pressed;
-  unsigned long last_change;
-  unsigned long last_register;
+  ButtonPressedState pressed_state;
+  uint8_t since_last_change;
+  unsigned short since_last_register;
 
-  ButtonState(): pressed(false), last_change(0), last_register(0) {}
+  bool is_pressed() {
+    return pressed_state != ButtonPressedState::not_pressed;
+  }
+
+  ButtonState(): pressed_state(not_pressed), since_last_change(0), since_last_register(0) {}
 };
 
 struct ButtonRepeatDelays {
-  short initial;
-  short subsequent;
+  unsigned short initial;
+  unsigned short subsequent;
 };
 
 struct ButtonStateSet {
@@ -43,6 +51,7 @@ class InputProcessor {
   virtual bool handle_button_up(Controller::Button button, int controller_index);
 
   private:
+  unsigned long last_process;
   void update_button_states(unsigned long now);
 };
 

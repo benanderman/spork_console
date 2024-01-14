@@ -4,7 +4,7 @@
 #define BUTTON_DEBOUNCE_THRESHOLD 20
 
 InputProcessor::InputProcessor(Controller *controllers, int controller_count):
-  controllers(controllers), controller_count(controller_count) {
+  controllers(controllers), controller_count(controller_count), last_process(0) {
   button_states = new ButtonStateSet[controller_count];
   
   button_conf[Controller::Button::b] = { .initial = 500, .subsequent = 500};
@@ -20,18 +20,25 @@ InputProcessor::InputProcessor(Controller *controllers, int controller_count):
 void InputProcessor::update_button_states(unsigned long now) {
   Controller::update_state(controllers, controller_count);
 
+  unsigned long since_last_process = now - last_process;
+
   for (int c = 0; c < controller_count; c++) {
     bool is_connected = controllers[c].is_connected();
     for (int b = 0; b < Controller::Button::__count; b++) {
-      bool new_state = is_connected && controllers[c][(Controller::Button)b];
-      if (new_state != button_states[c][b].pressed) {
-        if (now - button_states[c][b].last_change > BUTTON_DEBOUNCE_THRESHOLD) {
-          button_states[c][b].pressed = new_state;
-          button_states[c][b].last_change = now;
-          button_states[c][b].last_register = 0;
-          if (!new_state) {
-            handle_button_up((Controller::Button)b, c);
-          }
+      ButtonState& state = button_states[c][b];
+      bool new_is_pressed = is_connected && controllers[c][(Controller::Button)b];
+      state.since_last_change = min(
+        state.since_last_change + since_last_process,
+        BUTTON_DEBOUNCE_THRESHOLD + 1
+      );
+      state.since_last_register += since_last_process;
+      if (new_is_pressed != state.is_pressed() && state.since_last_change > BUTTON_DEBOUNCE_THRESHOLD) {
+        state.pressed_state = ButtonPressedState::pressed_zero_registers;
+        state.since_last_change = 0;
+        state.since_last_register = 0;
+        if (!new_is_pressed) {
+          state.pressed_state = ButtonPressedState::not_pressed;
+          handle_button_up((Controller::Button)b, c);
         }
       }
     }
@@ -40,6 +47,8 @@ void InputProcessor::update_button_states(unsigned long now) {
 
 bool InputProcessor::handle_input(unsigned long now) {
   update_button_states(now);
+  unsigned long since_last_process = now - last_process;
+  last_process = now;
 
   bool should_exit = false;
 
@@ -49,25 +58,37 @@ bool InputProcessor::handle_input(unsigned long now) {
       ButtonRepeatDelays conf = button_conf[b];
       
       bool should_register = false;
-      if (state.pressed) {
-        unsigned long since_last_register = now - state.last_register;
-  
+      switch (state.pressed_state) {
+        case not_pressed: {
+          break;
+        }
+
         // First register
-        if (state.last_register < state.last_change) {
+        case pressed_zero_registers: {
           should_register = true;
-          state.last_register = state.last_change;
-  
+          state.since_last_register = 0;
+          state.pressed_state = ButtonPressedState::pressed_one_register;
+          break;
+        }
+
         // Second register
-        } else if (state.last_register == state.last_change) {
-          if (conf.initial && since_last_register >= conf.initial) {
+        case pressed_one_register: {
+          if (conf.initial && state.since_last_register >= conf.initial) {
             should_register = true;
-            state.last_register += conf.initial;
+            state.since_last_register -= conf.initial;
+            state.pressed_state = ButtonPressedState::pressed_more_registers;
           }
-  
+          break;
+        }
+
         // Third+ register
-        } else if (conf.subsequent && since_last_register >= conf.subsequent) {
-          should_register = true;
-          state.last_register += conf.subsequent;
+        case pressed_more_registers: {
+          if (conf.subsequent && state.since_last_register >= conf.subsequent) {
+            should_register = true;
+            state.since_last_register -= conf.subsequent;
+            state.pressed_state = ButtonPressedState::pressed_more_registers;
+          }
+          break;
         }
       }
   
