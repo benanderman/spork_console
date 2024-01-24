@@ -7,6 +7,7 @@
 #include "sporktris.h"
 #include "life.h"
 #include "neopixels.h"
+#include "dice_game.h"
 
 // For controlling via internet, etc.; not a real controller
 Controller aux_controller = Controller(CONTROLLER_AUX_SER_PIN, CONTROLLER_AUX_CONN_PIN, NULL);
@@ -115,6 +116,12 @@ void loop() {
         while (!life.play()) {}
         break;
       }
+      case MenuChoice::dice: {
+        DiceGame dice_game(disp, controllers, controller_count);
+        while (!dice_game.play()) {}
+        break;
+      }
+      
     }
   }
 }
