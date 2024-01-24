@@ -13,7 +13,7 @@ struct Obstacles {
 
   Obstacles();
   void fill_row(int row);
-  void decend();
+  bool decend();
   void recycle_lowest_row();
   void resolve_collision(int column, int projectile_color);
   int row_to_index(int row);

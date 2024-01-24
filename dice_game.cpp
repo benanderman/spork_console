@@ -22,7 +22,8 @@ bool DiceGame::play() {
 
   unsigned long last_frame = millis();
   int frame_speed = 66;
-  int decend_cooldown = 20; //unit: frames
+  const int decend_cooldown = 40;
+  int decend_timer = 0; 
 
   bool alive = true;
   while (alive) {
@@ -41,10 +42,10 @@ bool DiceGame::play() {
 
     if (now > last_frame + frame_speed) {
       last_frame = now;
-      decend_cooldown--;
-      if (decend_cooldown == 0) {
-        decend_cooldown = 20;
-        obstacles.decend();
+      decend_timer--;
+      if (decend_timer <= 0) {
+        decend_timer = decend_cooldown;
+        alive = !obstacles.decend();
       }
       projectiles.ascend_all();
     }
@@ -132,10 +133,11 @@ void Obstacles::draw(Display& disp) {
   }
 }
 
-void Obstacles::decend() {
+bool Obstacles::decend() {
   int row_count = sizeof(rows)/sizeof(rows[0]);
   first_row = (first_row - 1 + row_count) % row_count;
   num_displayed += 1;
+  return (num_displayed == row_count); //returns if the player has lost
 }
 
 void Obstacles::recycle_lowest_row() {
@@ -144,8 +146,8 @@ void Obstacles::recycle_lowest_row() {
 }
 
 void Obstacles::resolve_collision(int column, int projectile_color){
-  for (int i = 0; i < num_displayed; i++) {
-    if (rows[row_to_index(i)][column] == 0) {
+  for (int i = 0; i < num_displayed + 1; i++) {
+    if (rows[row_to_index(i)][column] == 0 || i == num_displayed) { 
       
       //collision is detected on the row above the first 0 found
       if (rows[row_to_index(i-1)][column] == projectile_color){
