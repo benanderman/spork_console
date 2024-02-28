@@ -97,28 +97,44 @@ void loop() {
     MenuChoice choice = menu.choose();
     switch (choice) {
       case MenuChoice::snake: {
-        SnakeGame snake_game(disp, controllers, controller_count);
-        while (!snake_game.play()) {}
+        bool quit = false;
+        while(!quit) {
+          SnakeGame snake_game(disp, controllers, controller_count);
+          quit = snake_game.play();
+        }
         break;
       }
       case MenuChoice::obstacle: {
-        ObstacleGame obstacle_game(disp, CONSOLE_LEFT_BUTTON_PIN, CONSOLE_RIGHT_BUTTON_PIN, controllers[0]);
-        while (!obstacle_game.play()) {}
+        bool quit = false;
+        while(!quit) {
+          ObstacleGame obstacle_game(disp, CONSOLE_LEFT_BUTTON_PIN, CONSOLE_RIGHT_BUTTON_PIN, controllers[0]);
+          quit = obstacle_game.play();
+        }
+        break;
+      }
+
+      case MenuChoice::dice: {
+        bool quit = false;
+        while(!quit) {
+          DiceGame dice_game(disp, controllers, controller_count);
+          quit = dice_game.play();
+        }
         break;
       }
       case MenuChoice::sporktris: {
-        Sporktris sporktris(disp, controllers, controller_count);
-        while (!sporktris.play()) {}
+        bool quit = false;
+        while(!quit) {
+          Sporktris sporktris(disp, controllers, controller_count);
+          quit = sporktris.play();
+        }
         break;
       }
       case MenuChoice::life: {
-        Life life(disp, controllers, controller_count);
-        while (!life.play()) {}
-        break;
-      }
-      case MenuChoice::dice: {
-        DiceGame dice_game(disp, controllers, controller_count);
-        while (!dice_game.play()) {}
+        bool quit = false;
+        while(!quit) {
+          Life life(disp, controllers, controller_count);
+          quit = life.play();
+        }
         break;
       }
       
