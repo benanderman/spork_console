@@ -26,14 +26,20 @@ struct Projectile {
   int color;
 
   bool draw(Display& disp);
+
+  Projectile();
+  Projectile(int x, int y, int color);
 };
 
 struct Projectiles {
   Projectile projectile_list[5];
+
   void add_projectile(int x, int y, int color);
   void remove_projectile(int index);
   void ascend_all();
   void draw(Display& disp, Obstacles& obstacles);
+
+  Projectiles();
 };
 
 class DiceGame: public InputProcessor {

@@ -5,12 +5,13 @@
 bool DiceGame::play() {
   byte palette[][3] = {
     {0, 0, 0},
-    {8, 8, 24},
-    {5, 24, 5},
-    {24, 12, 12},
+    {24, 0, 0},
+    {24, 6, 0},
+    {12, 12, 0},
+    {0, 20, 0},
+    {4, 4, 24},
     {12, 0, 12},
-    {15, 15, 0},
-    {15, 0, 0},
+    {24, 0, 0},
     {0, 0, 0},
   };
   disp.palette = palette;
@@ -22,7 +23,7 @@ bool DiceGame::play() {
 
   unsigned long last_frame = millis();
   int frame_speed = 66;
-  const int decend_cooldown = 40;
+  int decend_cooldown = 80;
   int decend_timer = 0; 
 
   bool alive = true;
@@ -58,7 +59,7 @@ bool DiceGame::play() {
     delay(1);
   }
 
-
+  return false;
 }
 
 bool DiceGame::handle_button_down(Controller::Button button, int controller_index) {
@@ -113,6 +114,7 @@ bool DiceGame::handle_button_down(Controller::Button button, int controller_inde
 
 
 Obstacles::Obstacles() {
+  randomSeed(analogRead(A0) + millis());
   for (int i = 0; i < sizeof(rows) / sizeof(*rows); i++) {
     fill_row(i);
   }
@@ -143,6 +145,7 @@ bool Obstacles::decend() {
 void Obstacles::recycle_lowest_row() {
   fill_row((first_row + num_displayed) % (sizeof(rows) / sizeof(rows[0])));
   num_displayed -= 1;
+
 }
 
 void Obstacles::resolve_collision(int column, int projectile_color){
@@ -162,6 +165,7 @@ void Obstacles::resolve_collision(int column, int projectile_color){
           }
         }
         if(!has_value){
+
           recycle_lowest_row();
         }
       }
@@ -179,12 +183,19 @@ bool Projectile::draw(Display& disp) {
   return disp.set_rect(x * 2, y, 2, 2, color);
 }
 
+Projectile::Projectile() : x(-1), y(0), color(0) {};
+Projectile::Projectile(int x, int y, int color) : x(x), y(y), color(color) {};
+
+Projectiles::Projectiles(){ //remove?
+  for(int i = 0; i < sizeof(projectile_list)/sizeof(projectile_list[0]); i++){
+    projectile_list[  i].x = -1;
+  }
+}
+
 void Projectiles::add_projectile(int x, int y, int color) {
   for (int i = 0; i < sizeof(projectile_list) / sizeof(projectile_list[0]); i++){
     if (projectile_list[i].x == -1) {
-      projectile_list[i].x = x;
-      projectile_list[i].y = y;
-      projectile_list[i].color = color;
+      projectile_list[i] = Projectile(x, y, color);
       break;
     }
   }
