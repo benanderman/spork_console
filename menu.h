@@ -9,7 +9,8 @@ enum MenuChoice {
   obstacle,
   sporktris,
   life,
-  dice
+  dice,
+  chess
 };
 
 class Menu {

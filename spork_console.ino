@@ -8,6 +8,7 @@
 #include "life.h"
 #include "neopixels.h"
 #include "dice_game.h"
+#include "chess.h"
 
 // For controlling via internet, etc.; not a real controller
 Controller aux_controller = Controller(CONTROLLER_AUX_SER_PIN, CONTROLLER_AUX_CONN_PIN, NULL);
@@ -137,7 +138,14 @@ void loop() {
         }
         break;
       }
-      
+      case MenuChoice::chess: {
+        bool quit = false;
+        while(!quit) {
+          Chess chess(disp, controllers, controller_count);
+          quit = chess.play();
+        }
+        break;
+      }
     }
   }
 }

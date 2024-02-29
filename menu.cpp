@@ -61,6 +61,18 @@ static const char PROGMEM dice_graphic[] =
       "____OO____"
       "____OO____";
 
+static const char PROGMEM chess_graphic[] = 
+      "__________"
+      "_O_OOOOOO_"
+      "_OOOO_OOO_"
+      "___O______"
+      "__O__O____"
+      "_____O____"
+      "______O___"
+      "_OOOO_OOOO"
+      "_OOOOO__O_"
+      "__________";
+
 struct Option {
   MenuChoice choice;
 
@@ -92,6 +104,7 @@ struct Option {
       case sporktris: return pgm_read_byte(&sporktris_graphic[index]);
       case life: return pgm_read_byte(&life_graphic[index]);
       case dice: return pgm_read_byte(&dice_graphic[index]);
+      case chess: return pgm_read_byte(&chess_graphic[index]);
     }
   }
 };
@@ -102,7 +115,8 @@ MenuChoice Menu::choose() {
     Option(MenuChoice::obstacle),
     Option(MenuChoice::sporktris),
     Option(MenuChoice::life),
-    Option(MenuChoice::dice)
+    Option(MenuChoice::dice),
+    Option(MenuChoice::chess)
   };
 
   byte palette[][3] = {
