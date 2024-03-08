@@ -127,7 +127,8 @@ MenuChoice Menu::choose() {
     {0, 24, 0},
     {24, 0, 0},
     {8, 16, 0},
-    {16, 0, 16}
+    {16, 0, 16},
+    {0, 24, 0}
     
   };
   disp.palette = palette;
