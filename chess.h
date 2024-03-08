@@ -39,14 +39,17 @@ struct Position {
 };
 
 struct Piece {
-  Side side(){
+  Side side() {
     return (data >> 4) & 0x1;
   }
-  PieceType type(){
+  PieceType type() {
     return data & 0xf;
   }
+  int color() {
+    return type();
+  }
 
-  Piece(Side side, PieceType type){
+  Piece(Side side, PieceType type) {
     data = ((side & 0x1) << 4) | (type & 0xf);
   }
   Piece() : Piece(Side::white, PieceType::none) {}  
@@ -57,8 +60,10 @@ struct Piece {
 
 struct Board {
   Piece board[8][8];
+  Position origin = Position(1,6);
 
-  Board();
+  int animation_time = 2000; //milliseconds
+  float max_dim = 0.6;
 
   int width(){
     return sizeof(*board)/sizeof(**board);
@@ -66,23 +71,10 @@ struct Board {
   int height(){
     return sizeof(board)/sizeof(*board);
   }
-};
 
-struct GameState {
-  Piece board[8][8];
-  Side turn = Side::white;
-  Position cursor_pos = Position(0,0);
+  void draw(Display& disp, Side turn);
 
-
-  GameState();
-
-  int board_width(){
-    return sizeof(*board)/sizeof(**board);
-  }
-  int board_height(){
-    return sizeof(board)/sizeof(*board);
-  }
-
+  Board();
 };
 
 class Chess: public InputProcessor {
@@ -98,9 +90,9 @@ class Chess: public InputProcessor {
   private:
   bool handle_button_down(Controller::Button button, int controller_index);
   
-  Piece board[8][8];
+  Board board;
   Side turn = Side::white;
-  Position cursor_pos = Position(0,0);
+  Position cursor_pos = Position(4,4);
 };
 
 #endif
