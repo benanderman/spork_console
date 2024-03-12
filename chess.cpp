@@ -19,7 +19,7 @@ bool Chess::play() {
   while(true) {
     disp.clear_all();
     board.draw(disp, turn);
-    disp.set_rect(cursor_pos.x() + board.origin.x(), cursor_pos.y() + board.origin.y(), 1, 1, 3);
+    disp.set_pixel(cursor_pos.x() + board.origin.x(), cursor_pos.y() + board.origin.y(), 3);
     disp.refresh();
     delay(1);
   }
@@ -76,4 +76,9 @@ Chess::Chess(Display& disp, Controller *controllers, int controller_count):
   button_conf[Controller::Button::left] = { .initial = 200, .subsequent = 20};
 }
 
-bool Chess::handle_button_down(Controller::Button button, int controller_index){};
+bool Chess::handle_button_down(Controller::Button button, int controller_index) {
+  if (button == Controller::Button::start) {
+    return true;
+  }
+  return false;
+}
