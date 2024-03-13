@@ -29,6 +29,20 @@ struct Position {
   uint8_t y() {
     return data >> 4;
   }
+  void set_x (int val) {
+    data = (data & 0xf0) | val;
+  }
+  void set_y (int val) {
+    data = (data & 0xf) | (val << 4);
+  }
+
+  bool operator==(Position other) {
+    return (other.x() == x() && other.y() == y());
+  }
+
+  bool operator!=(Position other) {
+    return !(operator==(other));
+  }
 
   Position(uint8_t x, uint8_t y) {
     data = (x & 0xf) | ((y & 0xf) << 4); 
@@ -61,6 +75,10 @@ struct Piece {
 struct Board {
   Piece board[8][8];
   Position origin = Position(1,6);
+  Side turn = Side::white;
+  bool game_over = false;
+  int en_passant_column = -1;
+  uint8_t castling_pieces_moves = 0; //bit vector
 
   int animation_time = 2000; //milliseconds
   float max_dim = 0.6;
@@ -71,8 +89,17 @@ struct Board {
   int height(){
     return sizeof(board)/sizeof(*board);
   }
+  Piece piece(Position pos) {
+    return board[pos.y()][pos.x()];
+  }
 
-  void draw(Display& disp, Side turn);
+  bool square_threatened(Position pos);
+  bool valid_castle(int column);
+  bool valid_move(Position start, Position end);
+  bool line_is_empty(Position start, Position end);
+  void move(Position start, Position end);
+
+  void draw(Display& disp);
 
   Board();
 };
@@ -91,7 +118,8 @@ class Chess: public InputProcessor {
   bool handle_button_down(Controller::Button button, int controller_index);
   
   Board board;
-  Side turn = Side::white;
+  bool selected = false;
+  Position selected_pos = Position(0,0);
   Position cursor_pos = Position(4,4);
 };
 
