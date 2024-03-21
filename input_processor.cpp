@@ -2,7 +2,7 @@
 #include "controller.h"
 
 // Minimum milliseconds between button state changes
-#define BUTTON_DEBOUNCE_THRESHOLD 20
+#define BUTTON_DEBOUNCE_THRESHOLD (unsigned long)20
 
 InputProcessor::InputProcessor(Controller *controllers, int controller_count):
   controllers(controllers), controller_count(controller_count), last_process(0) {
@@ -27,7 +27,7 @@ void InputProcessor::update_button_states(unsigned long now) {
   for (int c = 0; c < controller_count; c++) {
     bool is_connected = controllers[c].is_connected();
     for (int b = 0; b < Controller::Button::__count; b++) {
-      Controller::ButtonHandlerState& state = controllers[c].handler_states[b];
+      Controller::ButtonHandlerState& state = controllers[c].handler_states[(Controller::Button)b];
       bool new_is_pressed = is_connected && controllers[c][(Controller::Button)b];
       state.since_last_change = min(
         state.since_last_change + since_last_process,
@@ -57,7 +57,7 @@ bool InputProcessor::handle_input(unsigned long now) {
 
   for (int c = 0; c < controller_count; c++) {
     for (int b = 0; b < Controller::Button::__count; b++) {
-      Controller::ButtonHandlerState& state = controllers[c].handler_states[b];
+      Controller::ButtonHandlerState& state = controllers[c].handler_states[(Controller::Button)b];
       ButtonRepeatDelays conf = button_conf[b];
       
       bool should_register = false;

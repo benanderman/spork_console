@@ -1,3 +1,4 @@
+#include "arduino.h"
 #include "obstacle_game.h"
 #include "graphics.h"
 

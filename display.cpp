@@ -1,3 +1,5 @@
+#include "string.h"
+
 #include "display.h"
 #include "neopixels.h"
 

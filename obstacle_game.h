@@ -12,8 +12,8 @@ class ObstacleGame {
   int RIGHT_BUTTON_PIN;
 
   ObstacleGame(Display& disp, int left_button_pin, int right_button_pin, Controller controller):
-    disp(disp), LEFT_BUTTON_PIN(left_button_pin), RIGHT_BUTTON_PIN(right_button_pin),
-    controller(controller) {}
+    disp(disp), controller(controller), LEFT_BUTTON_PIN(left_button_pin),
+    RIGHT_BUTTON_PIN(right_button_pin) {}
 
   bool play();
 
