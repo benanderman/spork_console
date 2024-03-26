@@ -1,3 +1,5 @@
+#include "string.h"
+
 #include "sporktris.h"
 #include "config.h"
 #include "graphics.h"

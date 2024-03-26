@@ -1,3 +1,4 @@
+#include "arduino.h"
 #include "controller.h"
 
 Controller::Controller(int ser_pin, int connected_pin, Controller *aux_controller) :

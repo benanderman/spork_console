@@ -1,8 +1,8 @@
 #ifndef __CONTROLLER
 #define __CONTROLLER
 
-#include "config.h"
 #include "arduino.h"
+#include "config.h"
 
 class Controller {
   public:
@@ -24,7 +24,7 @@ class Controller {
       not_pressed = 0,
       pressed_zero_registers,
       pressed_one_register,
-      pressed_more_registers,
+      pressed_more_registers
     } __attribute__((packed));
 
     PressedState pressed_state;
@@ -63,7 +63,7 @@ class Controller {
 
   Controller *aux;
   
-  byte button_state;
+  uint8_t button_state;
 };
 
 #endif

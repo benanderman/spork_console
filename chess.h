@@ -55,10 +55,10 @@ struct Position {
 
 struct Piece {
   Side side() {
-    return (data >> 4) & 0x1;
+    return (Side)((data >> 4) & 0x1);
   }
   PieceType type() {
-    return data & 0xf;
+    return (PieceType)(data & 0xf);
   }
   int color() {
     return type();

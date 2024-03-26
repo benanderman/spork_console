@@ -1,3 +1,4 @@
+#include "arduino.h"
 #include "snake_game.h"
 #include "graphics.h"
 #include "pitches.h"

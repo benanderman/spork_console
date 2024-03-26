@@ -1,3 +1,8 @@
+#ifndef __CONFIG
+#define __CONFIG
+
+#include "arduino.h"
+
 #define SPORK_CONSOLE_V1  1
 #define SPORK_CONSOLE_V2  2
 #define AMEX_CONSOLE      3
@@ -7,7 +12,6 @@
 #define HARDWARE  RGB_CONSOLE
 
 #define MAX_DISPLAY_PIXELS  200
-#define DISPLAY_INITIAL_BRIGHTNESS 8
 
 #define AUDIO_ENABLED               (HARDWARE == AMEX_CONSOLE)
 #define BRIGHTNESS_ENABLED          (HARDWARE == SPORK_CONSOLE_V2)
@@ -58,17 +62,21 @@
 
 #if HARDWARE == RGB_CONSOLE || HARDWARE == ARCADE_CABINET
   #define DISPLAY_INITIAL_BRIGHTNESS 1
+#else
+  #define DISPLAY_INITIAL_BRIGHTNESS 8
 #endif
-
-// If arcade cabinet; but also used as a default
-#define DISPLAY_NEOPIXEL_PIN  12
-#define PIXEL_PORT  PORTB  // Port of the pin the pixels are connected to
-#define PIXEL_DDR   DDRB   // Port of the pin the pixels are connected to
-#define PIXEL_BIT   4      // Bit of the pin the pixels are connected to
 
 #if HARDWARE == RGB_CONSOLE
   #define DISPLAY_NEOPIXEL_PIN  2
   #define PIXEL_PORT  PORTD
   #define PIXEL_DDR   DDRD
   #define PIXEL_BIT   2
+#else
+  // If arcade cabinet
+  #define DISPLAY_NEOPIXEL_PIN  12
+  #define PIXEL_PORT  PORTB  // Port of the pin the pixels are connected to
+  #define PIXEL_DDR   DDRB   // Port of the pin the pixels are connected to
+  #define PIXEL_BIT   4      // Bit of the pin the pixels are connected to
+#endif
+
 #endif

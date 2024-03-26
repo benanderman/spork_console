@@ -1,3 +1,5 @@
+#include "string.h"
+
 #include "graphics.h"
 #include "controller.h"
 
@@ -35,9 +37,9 @@ void Graphics::explode_pixels(Display& disp, byte (*palette)[3], byte swap_index
     while (palette[swap_index][0] < max_value &&
            palette[swap_index][1] < max_value &&
            palette[swap_index][2] < max_value) {
-      palette[swap_index][0] = min(max_value, (palette[swap_index][0] + 1) * 1.2);
-      palette[swap_index][1] = min(max_value, (palette[swap_index][1] + 1) * 1.2);
-      palette[swap_index][2] = min(max_value, (palette[swap_index][2] + 1) * 1.2);
+      palette[swap_index][0] = min(max_value, (uint8_t)((palette[swap_index][0] + 1) * 1.2));
+      palette[swap_index][1] = min(max_value, (uint8_t)((palette[swap_index][1] + 1) * 1.2));
+      palette[swap_index][2] = min(max_value, (uint8_t)((palette[swap_index][2] + 1) * 1.2));
       disp.refresh();
       delayMicroseconds(300);
     }
