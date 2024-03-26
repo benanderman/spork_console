@@ -26,7 +26,6 @@ bool Chess::play() {
       disp.palette = NULL;
       return true;
     }
-
     disp.clear_all();
     board.draw(disp);
     disp.set_pixel(cursor_pos.x() + board.origin.x(), cursor_pos.y() + board.origin.y(), 7);
@@ -51,10 +50,10 @@ Board::Board() {
 }
 
 void Board::move(Position start, Position end) {
-  turn = !turn;
+  //turn = turn == Side::white ? Side::black : Side::white;
   game_over = (piece(end).type() == PieceType::king);
   board[end.y()][end.x()] = piece(start);
-  board[start.y()][end.y()] = Piece();
+  board[start.y()][start.x()] = Piece();
 }
 
 bool Board::line_is_empty(Position start, Position end) {
@@ -103,10 +102,16 @@ bool Board::valid_move(Position start, Position end) {
     return false;
   }
 
-  Position offset = Position(start.x() - end.x(), start.y() - end.y());
+  Position offset = Position(end.x() - start.x() , end.y() - start.y() );
   switch (start_piece.type()) {
+    case PieceType::knight:
+      if ((abs(offset.x()) == 1 && abs(offset.y()) == 2) || (abs(offset.x()) == 2 && abs(offset.y()) == 1)) {
+        return true;
+      }
+      break;
     case PieceType::pawn:
-      int direction = start_piece.type() == Side::white ? 1 : -1;
+      turn = turn == Side::white ? Side::black : Side::white;
+      int direction = start_piece.type() == Side::white ? -1 : 1;
       int start_line = start_piece.type() == Side::white ? 6 : 1;
       if (abs(offset.x()) == 1) {
         if ((offset.y() == 1*direction) && (end_piece.type() != PieceType::none || end.x() == en_passant_column)) {
@@ -116,11 +121,6 @@ bool Board::valid_move(Position start, Position end) {
         if (end_piece.type() == PieceType::none && (offset.y() == 1*direction || (offset.y() == 2*direction && line_is_empty(start, end)) ) ) {
           return true;
         }
-      }
-      break;
-    case PieceType::knight:
-      if ((abs(offset.x()) == 1 && abs(offset.y()) == 2) || (abs(offset.x()) == 2 && abs(offset.y()) == 1)) {
-        return true;
       }
       break;
     case PieceType::bishop:
@@ -144,8 +144,8 @@ bool Board::valid_move(Position start, Position end) {
       }
       break;
     
-    return false;
   }
+  return false;
 }
 
 void Board::draw(Display& disp) {

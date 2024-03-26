@@ -23,17 +23,17 @@ enum Side {
 } __attribute__((packed));
 
 struct Position {
-  uint8_t x() {
-    return data & 0xf;
+  int8_t x() {
+    return x_;
   }
-  uint8_t y() {
-    return data >> 4;
+  int8_t y() {
+    return y_;
   }
   void set_x (int val) {
-    data = (data & 0xf0) | val;
+    x_ = val;
   }
   void set_y (int val) {
-    data = (data & 0xf) | (val << 4);
+    y_ = val;
   }
 
   bool operator==(Position other) {
@@ -44,12 +44,13 @@ struct Position {
     return !(operator==(other));
   }
 
-  Position(uint8_t x, uint8_t y) {
-    data = (x & 0xf) | ((y & 0xf) << 4); 
+  Position(int8_t x, int8_t y) {
+    x_ = x;
+    y_ = y;
   }
-
   private:
-  uint8_t data;
+  int8_t x_;
+  int8_t y_;
 };
 
 struct Piece {
