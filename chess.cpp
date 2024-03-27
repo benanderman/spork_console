@@ -87,6 +87,7 @@ bool Board::square_threatened(Position pos) {
 
 
   }
+  return false;
 }
 
 bool Board::valid_move(Position start, Position end) {
@@ -109,7 +110,7 @@ bool Board::valid_move(Position start, Position end) {
         return true;
       }
       break;
-    case PieceType::pawn:
+    case PieceType::pawn: {
       turn = turn == Side::white ? Side::black : Side::white;
       int direction = start_piece.type() == Side::white ? -1 : 1;
       int start_line = start_piece.type() == Side::white ? 6 : 1;
@@ -123,6 +124,7 @@ bool Board::valid_move(Position start, Position end) {
         }
       }
       break;
+    }
     case PieceType::bishop:
       if (abs(offset.x()) == abs(offset.y()) && line_is_empty(start, end)) {
         return true;
@@ -145,6 +147,10 @@ bool Board::valid_move(Position start, Position end) {
       break;
     
   }
+  return false;
+}
+
+bool Board::valid_castle(int column) {
   return false;
 }
 
