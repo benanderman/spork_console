@@ -191,7 +191,7 @@ bool Sporktris::play() {
       last_cycle = now;
       if (line_count / 10 > level) {
         level++;
-        cycle_length = floor(float(cycle_length + 35) / 1.5);
+        cycle_length = (unsigned long)(float(cycle_length + 35) / 1.5);
       }
     }
 
