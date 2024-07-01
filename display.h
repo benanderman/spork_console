@@ -12,7 +12,7 @@ class Display {
     rows, // Left to right, top to bottom rows
     U, // Two columns of rows, top to bottom, then bottom to top
     N // Columns that alternate top to bottom, bottom to top
-  };
+  } __attribute__((packed));
 
   Mode mode;
   int width;

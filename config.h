@@ -61,8 +61,10 @@
 // Note that you could also include the DigitalWriteFast header file to not need to do this lookup.
 
 #if HARDWARE == RGB_CONSOLE || HARDWARE == ARCADE_CABINET
-  #define DISPLAY_INITIAL_BRIGHTNESS 1
+  #define DISPLAY_MAX_BRIGHTNESS 6
+  #define DISPLAY_INITIAL_BRIGHTNESS 3
 #else
+  #define DISPLAY_MAX_BRIGHTNESS 255
   #define DISPLAY_INITIAL_BRIGHTNESS 8
 #endif
 

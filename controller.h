@@ -58,8 +58,8 @@ class Controller {
   static void update_state(Controller controllers[], int count);
   
   private:
-  int SER_PIN;
-  int CONNECTED_PIN;
+  uint8_t SER_PIN;
+  uint8_t CONNECTED_PIN;
 
   Controller *aux;
   

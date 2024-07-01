@@ -10,13 +10,23 @@
 #include "dice_game.h"
 #include "chess.h"
 
+#if CONTROLLER_AUX_ENABLED
 // For controlling via internet, etc.; not a real controller
 Controller aux_controller = Controller(CONTROLLER_AUX_SER_PIN, CONTROLLER_AUX_CONN_PIN, NULL);
+Controller *aux_controller_ptr = &aux_controller;
+#else
+Controller *aux_controller_ptr = NULL;
+#endif
 
-Controller controllers[2] = {
-  Controller(CONTROLLER_1_SER_PIN, CONTROLLER_1_CONN_PIN, CONTROLLER_AUX_ENABLED ? &aux_controller : NULL),
+Controller controllers[] = {
+  Controller(CONTROLLER_1_SER_PIN, CONTROLLER_1_CONN_PIN, aux_controller_ptr),
   Controller(CONTROLLER_2_SER_PIN, CONTROLLER_2_CONN_PIN, NULL)
 };
+
+int controller_count = sizeof(controllers) / sizeof(*controllers);
+#if HARDWARE == ARCADE_CABINET
+controller_count = 1;
+#endif
 
 void setup() {
   if (SHIFT_REGISTER_DISPLAY) {
@@ -74,6 +84,11 @@ void setup_neopixels() {
   Neopixels::ledSetup();
 }
 
+MenuChoice choose_game(Display& disp, MenuChoice initial_option) {
+  Menu menu(disp, controllers, controller_count, CONSOLE_LEFT_BUTTON_PIN, CONSOLE_RIGHT_BUTTON_PIN);
+  return menu.choose(initial_option);
+}
+
 void loop() {
   bool use_neopixels = neopixels_connected();
 
@@ -87,15 +102,9 @@ void loop() {
   
   disp.set_brightness(DISPLAY_INITIAL_BRIGHTNESS);
 
-  int controller_count = sizeof(controllers) / sizeof(*controllers);
-  if (HARDWARE == ARCADE_CABINET) {
-    controller_count = 1;
-  }
-  
-  Menu menu(disp, controllers, controller_count, CONSOLE_LEFT_BUTTON_PIN, CONSOLE_RIGHT_BUTTON_PIN);
-
+  MenuChoice choice = MenuChoice::snake;
   while (true) {
-    MenuChoice choice = menu.choose();
+    choice = choose_game(disp, choice);
     switch (choice) {
       case MenuChoice::snake: {
         bool quit = false;

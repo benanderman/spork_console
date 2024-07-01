@@ -35,6 +35,22 @@ void Display::clear_all() {
 
 void Display::refresh(get_pixel_func_t get_pixel_func) {
   int total_pixels = width * height;
+  byte r_shift = 0;
+  byte l_shift = 0;
+  switch (brightness) {
+    case 0:
+    r_shift = 7;
+    break;
+    case 1:
+    r_shift = 2;
+    break;
+    case 2:
+    r_shift = 1;
+    break;
+    default:
+    l_shift = brightness - 3;
+    break;
+  };
   for (int p = 0; p < total_pixels; p++) {
     int i = p;
     if (!neopixels) {
@@ -72,7 +88,6 @@ void Display::refresh(get_pixel_func_t get_pixel_func) {
 
     if (neopixels) {
       if (palette) {
-        byte m = brightness;
         byte *pixel = palette[val];
         byte r = pixel[0];
         byte g = pixel[1];
@@ -83,7 +98,7 @@ void Display::refresh(get_pixel_func_t get_pixel_func) {
           g = (p >> 16) & 0xFF;
           b = (p >>  8) & 0xFF;
         }
-        Neopixels::sendPixel(r * m, g * m, b * m);
+        Neopixels::sendPixel((r >> r_shift) << l_shift, (g >> r_shift) << l_shift, (b >> r_shift) << l_shift);
       } else {
         byte pixel_brightness = (val ? brightness : 0);
         Neopixels::sendPixel(pixel_brightness, pixel_brightness, pixel_brightness);

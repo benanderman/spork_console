@@ -26,7 +26,7 @@ class Menu {
     LEFT_BUTTON_PIN(left_button_pin), RIGHT_BUTTON_PIN(right_button_pin),
     option_index(0) {}
   
-  MenuChoice choose();
+  MenuChoice choose(MenuChoice initial_option = MenuChoice::snake);
 
   private:
   int option_index;

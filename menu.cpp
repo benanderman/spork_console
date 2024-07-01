@@ -109,7 +109,7 @@ struct Option {
   }
 };
 
-MenuChoice Menu::choose() {
+MenuChoice Menu::choose(MenuChoice initial_option) {
   Option options[] = {
     Option(MenuChoice::snake),
     Option(MenuChoice::obstacle),
@@ -118,6 +118,14 @@ MenuChoice Menu::choose() {
     Option(MenuChoice::dice),
     Option(MenuChoice::chess)
   };
+  const int option_count = sizeof(options) / sizeof(*options);
+
+  for (int i = 0; i < option_count; i++) {
+    if (options[i].choice == initial_option) {
+      option_index = i;
+      break;
+    }
+  }
 
   byte palette[][3] = {
     {0, 0, 0},
@@ -136,7 +144,6 @@ MenuChoice Menu::choose() {
   get_pixel_func_t get_pixel_func = NULL;
 
   bool chosen = false;
-  const int option_count = sizeof(options) / sizeof(*options);
   unsigned long last_change = millis();
   unsigned long last_brightness_change = millis();
   while (!chosen) {
@@ -176,7 +183,7 @@ MenuChoice Menu::choose() {
     }
 
     // Update brightness with left and right
-    if (now > last_brightness_change + 500) {
+    if (now > last_brightness_change + 400) {
       byte brightness = disp.get_brightness();
       bool left = false;
       bool right = false;
@@ -188,8 +195,10 @@ MenuChoice Menu::choose() {
         right = right || controllers[c][Controller::Button::right];
       }
       if (left || right) {
+        brightness += DISPLAY_MAX_BRIGHTNESS;
         brightness += left * -1 + right * 1;
-        disp.set_brightness(byte(brightness));
+        brightness = brightness % DISPLAY_MAX_BRIGHTNESS;
+        disp.set_brightness(brightness);
         last_brightness_change = now;
       }
     }
