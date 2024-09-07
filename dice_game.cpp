@@ -23,8 +23,9 @@ bool DiceGame::play() {
 
   unsigned long last_frame = millis();
   int frame_speed = 66;
-  int decend_cooldown = 80;
-  int decend_timer = 0; 
+  int descend_cooldown = 80;
+  int descend_timer = 0;
+  int level_descend_count = 0;
 
   bool alive = true;
   while (alive) {
@@ -43,10 +44,16 @@ bool DiceGame::play() {
 
     if (now > last_frame + frame_speed) {
       last_frame = now;
-      decend_timer--;
-      if (decend_timer <= 0) {
-        decend_timer = decend_cooldown;
-        alive = !obstacles.decend();
+      descend_timer--;
+      if (descend_timer <= 0) {
+        descend_timer = descend_cooldown;
+        alive = !obstacles.descend();
+
+        level_descend_count++;
+        if (level_descend_count == 10) {
+          level_descend_count = 0;
+          descend_cooldown *= 0.9;
+        }
       }
       projectiles.ascend_all();
     }
@@ -135,7 +142,7 @@ void Obstacles::draw(Display& disp) {
   }
 }
 
-bool Obstacles::decend() {
+bool Obstacles::descend() {
   int row_count = sizeof(rows)/sizeof(rows[0]);
   first_row = (first_row - 1 + row_count) % row_count;
   num_displayed += 1;
