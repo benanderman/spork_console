@@ -62,7 +62,7 @@
 
 #if HARDWARE == RGB_CONSOLE || HARDWARE == ARCADE_CABINET
   #define DISPLAY_MAX_BRIGHTNESS 6
-  #define DISPLAY_INITIAL_BRIGHTNESS 3
+  #define DISPLAY_INITIAL_BRIGHTNESS 1
 #else
   #define DISPLAY_MAX_BRIGHTNESS 255
   #define DISPLAY_INITIAL_BRIGHTNESS 8
@@ -80,5 +80,18 @@
   #define PIXEL_DDR   DDRB   // Port of the pin the pixels are connected to
   #define PIXEL_BIT   4      // Bit of the pin the pixels are connected to
 #endif
+
+// Multi-console support
+#define CONTROLLER_SHLD_IN_PIN   PIND
+#define CONTROLLER_SHLD_BIT      5
+#define CONTROLLER_CLK_IN_PIN   PIND
+#define CONTROLLER_CLK_BIT       6
+#define PERIPHERAL_PIXEL_PIN     PIND
+#define PERIPHERAL_PIXEL_PORT    PORTD
+#define PERIPHERAL_PIXEL_BIT     6
+#define PERIPHERAL_SER_IN_PIN    PIND
+#define PERIPHERAL_SER_IN_BIT    7
+#define PERIPHERAL_SER_OUT_PORT  PORTB
+#define PERIPHERAL_SER_OUT_BIT   1
 
 #endif
