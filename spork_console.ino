@@ -9,6 +9,7 @@
 #include "neopixels.h"
 #include "dice_game.h"
 #include "chess.h"
+#include "multi_console.h"
 
 #if CONTROLLER_AUX_ENABLED
 // For controlling via internet, etc.; not a real controller
@@ -152,6 +153,15 @@ void loop() {
         while(!quit) {
           Chess chess(disp, controllers, controller_count);
           quit = chess.play();
+        }
+        break;
+      }
+      case MenuChoice::peripheral: {
+        bool quit = false;
+        while(!quit) {
+          MultiConsole multiConsole;
+          multiConsole.run_peripheral_mode();
+          quit = true;
         }
         break;
       }

@@ -73,6 +73,18 @@ static const char PROGMEM chess_graphic[] =
       "_OOOOO__O_"
       "__________";
 
+static const char PROGMEM peripheral_graphic[] =
+      "__________"
+      "_OOOOOOOO_"
+      "_O______O_"
+      "_O______O_"
+      "_O______O_"
+      "_OOOOOOOO_"
+      "_O________"
+      "_O________"
+      "_O________"
+      "__________";
+
 struct Option {
   MenuChoice choice;
 
@@ -105,6 +117,7 @@ struct Option {
       case life: return pgm_read_byte(&life_graphic[index]);
       case dice: return pgm_read_byte(&dice_graphic[index]);
       case chess: return pgm_read_byte(&chess_graphic[index]);
+      case peripheral: return pgm_read_byte(&peripheral_graphic[index]);
     }
   }
 };
@@ -116,7 +129,8 @@ MenuChoice Menu::choose(MenuChoice initial_option) {
     Option(MenuChoice::sporktris),
     Option(MenuChoice::life),
     Option(MenuChoice::dice),
-    Option(MenuChoice::chess)
+    Option(MenuChoice::chess),
+    Option(MenuChoice::peripheral)
   };
   const int option_count = sizeof(options) / sizeof(*options);
 
@@ -136,7 +150,8 @@ MenuChoice Menu::choose(MenuChoice initial_option) {
     {24, 0, 0},
     {8, 16, 0},
     {16, 0, 16},
-    {0, 24, 0}
+    {0, 24, 0},
+    {0, 16, 8}
     
   };
   disp.palette = palette;

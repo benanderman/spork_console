@@ -10,7 +10,8 @@ enum MenuChoice {
   sporktris,
   life,
   dice,
-  chess
+  chess,
+  peripheral
 };
 
 class Menu {
