@@ -20,10 +20,14 @@ bool Controller::is_connected() {
 }
 
 void Controller::update_state(Controller controllers[], int count) {
+  // Use INPUT_PULLUP instead of OUTPUT and digitalWrite(1) to make it
+  // safe to connect to plug into another console.
   digitalWrite(CONTROLLER_SHLD_PIN, LOW);
-  digitalWrite(CONTROLLER_CLK_PIN, HIGH);
+  pinMode(CONTROLLER_SHLD_PIN, OUTPUT);
+  pinMode(CONTROLLER_CLK_PIN, INPUT_PULLUP);
   digitalWrite(CONTROLLER_CLK_PIN, LOW);
-  digitalWrite(CONTROLLER_SHLD_PIN, HIGH);
+  pinMode(CONTROLLER_CLK_PIN, OUTPUT);
+  pinMode(CONTROLLER_SHLD_PIN, INPUT_PULLUP);
 
   if (CONTROLLER_AUX_ENABLED) {
     digitalWrite(CONTROLLER_AUX_SHLD_PIN, LOW);
@@ -41,11 +45,8 @@ void Controller::update_state(Controller controllers[], int count) {
       }
     }
     
-    digitalWrite(CONTROLLER_CLK_PIN, HIGH);
+    pinMode(CONTROLLER_CLK_PIN, INPUT_PULLUP);
     digitalWrite(CONTROLLER_CLK_PIN, LOW);
-    if (CONTROLLER_AUX_ENABLED) {
-      digitalWrite(CONTROLLER_AUX_CLK_PIN, HIGH);
-      digitalWrite(CONTROLLER_AUX_CLK_PIN, LOW);
-    }
+    pinMode(CONTROLLER_CLK_PIN, OUTPUT);
   }
 }
