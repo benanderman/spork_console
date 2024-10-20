@@ -25,21 +25,21 @@ void MultiConsole::run_peripheral_mode() {
       "rjmp turnDisplayBitOff \n\t"
       "rjmp turnDisplayBitOn \n\t"
 
-    "turnDisplayBitOff: \n\t"
-      "out %[pixelOutPort], r18 \n\t"
-    "displayBitOffLoop: \n\t"
-      "sbis %[controllerSHLDPin], %[controllerSHLDBit] \n\t"
-      "rjmp startForwardingController \n\t"
-      "sbis %[pixelInPin], %[pixelInBit] \n\t"
-      "rjmp displayBitOffLoop \n\t"
-      "rjmp turnDisplayBitOn \n\t"
+      "turnDisplayBitOff: \n\t"
+        "out %[pixelOutPort], r18 \n\t"
+      "displayBitOffLoop: \n\t"
+        "sbis %[controllerSHLDPin], %[controllerSHLDBit] \n\t"
+        "rjmp startForwardingController \n\t"
+        "sbis %[pixelInPin], %[pixelInBit] \n\t"
+        "rjmp displayBitOffLoop \n\t"
+        "rjmp turnDisplayBitOn \n\t"
 
-    "turnDisplayBitOn: \n\t"
-      "out %[pixelOutPort], r19 \n\t"
-    "displayBitOnLoop: \n\t"
-      "sbic %[pixelInPin], %[pixelInBit] \n\t"
-      "rjmp displayBitOnLoop \n\t"
-      "rjmp turnDisplayBitOff \n\t"
+      "turnDisplayBitOn: \n\t"
+        "out %[pixelOutPort], r19 \n\t"
+      "displayBitOnLoop: \n\t"
+        "sbic %[pixelInPin], %[pixelInBit] \n\t"
+        "rjmp displayBitOnLoop \n\t"
+        "rjmp turnDisplayBitOff \n\t"
     
     "startForwardingController: \n\t"
       "waitForSHLDSet: \n\t"
@@ -63,12 +63,30 @@ void MultiConsole::run_peripheral_mode() {
           "rjmp waitForCLKClear \n\t"
 
         "dec r20 \n\t"
-        "breq startMirroringDisplay \n\t" // Jump if r20 is 1
-        "rjmp controllerShiftLoop \n\t"
+        "brne controllerShiftLoop \n\t" // Do loop again if r20 is not 1
+      "rjmp startMirroringDisplay \n\t" // Remove to enable disconnection detection
+
+      // Disconnection detection; not yet working
+      "sbi %[controllerCLKPort], %[controllerCLKBit] \n\t" // Change to input pull-up
+      "ldi r20, 20 \n\t" // Check up to 20 times for CLK to be low (meaning still connected)
+      "connectionDetectionLoop: \n\t"
+        "sbis %[controllerCLKPin], %[controllerCLKBit] \n\t"
+        "rjmp stillConnected \n\t"
+        "dec r20 \n\t"
+        "brne connectionDetectionLoop \n\t" // Do loop again if r20 is not 1
+      "rjmp disconnected \n\t" // CLK stayed high; seems disconnected
+
+      "stillConnected:"
+        "cbi %[controllerCLKPort], %[controllerCLKBit] \n\t" // Change back to input
+        "rjmp startMirroringDisplay \n\t"
+
+      "disconnected: \n\t"
+        "nop \n\t"
     ::
     [controllerSHLDPin]    "I" (_SFR_IO_ADDR(CONTROLLER_SHLD_IN_PIN)),
     [controllerSHLDBit]    "I" (CONTROLLER_SHLD_BIT),
     [controllerCLKPin]     "I" (_SFR_IO_ADDR(CONTROLLER_CLK_IN_PIN)),
+    [controllerCLKPort]    "I" (_SFR_IO_ADDR(CONTROLLER_CLK_PORT)),
     [controllerCLKBit]     "I" (CONTROLLER_CLK_BIT),
     [pixelOutPort]         "I" (_SFR_IO_ADDR(PIXEL_PORT)),
     [pixelOutBit]          "I" (PIXEL_BIT),
