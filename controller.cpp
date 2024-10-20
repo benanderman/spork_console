@@ -1,10 +1,23 @@
 #include "arduino.h"
 #include "controller.h"
+#include "multi_console.h"
+
+void enterMultiConsoleModeIfDetected() {
+  pinMode(CONTROLLER_CLK_PIN, INPUT_PULLUP);
+  for (int i = 0; i < 8; i++) {
+    if (!digitalRead(CONTROLLER_CLK_PIN)) {
+      MultiConsole multiConsole;
+      multiConsole.run_peripheral_mode();
+    }
+  }
+  pinMode(CONTROLLER_CLK_PIN, OUTPUT);
+  digitalWrite(CONTROLLER_CLK_PIN, LOW);
+}
 
 Controller::Controller(int ser_pin, int connected_pin, Controller *aux_controller) :
   SER_PIN(ser_pin), CONNECTED_PIN(connected_pin), aux(aux_controller), button_state(0)
 {}
-  
+
 bool Controller::operator[](Button button) const {
   return (button_state >> button) & 1;
 }
@@ -20,14 +33,12 @@ bool Controller::is_connected() {
 }
 
 void Controller::update_state(Controller controllers[], int count) {
-  // Use INPUT_PULLUP instead of OUTPUT and digitalWrite(1) to make it
-  // safe to connect to plug into another console.
+  enterMultiConsoleModeIfDetected();
+
   digitalWrite(CONTROLLER_SHLD_PIN, LOW);
-  pinMode(CONTROLLER_SHLD_PIN, OUTPUT);
-  pinMode(CONTROLLER_CLK_PIN, INPUT_PULLUP);
+  digitalWrite(CONTROLLER_CLK_PIN, HIGH);
   digitalWrite(CONTROLLER_CLK_PIN, LOW);
-  pinMode(CONTROLLER_CLK_PIN, OUTPUT);
-  pinMode(CONTROLLER_SHLD_PIN, INPUT_PULLUP);
+  digitalWrite(CONTROLLER_SHLD_PIN, HIGH);
 
   if (CONTROLLER_AUX_ENABLED) {
     digitalWrite(CONTROLLER_AUX_SHLD_PIN, LOW);
@@ -38,15 +49,14 @@ void Controller::update_state(Controller controllers[], int count) {
 
   for (int i = 0; i < 8; i++) {
     for (int c = 0; c < count; c++) {
-      Controller *con = &controllers[c];
-      con->button_state = (con->button_state << 1) | (digitalRead(con->SER_PIN) & 1);
-      if (con->aux && con->aux->is_connected()) {
-        con->button_state |= digitalRead(con->aux->SER_PIN) & 1;
+      Controller &con = controllers[c];
+      con.button_state = (con.button_state << 1) | (digitalRead(con.SER_PIN) & 1);
+      if (con.aux && con.aux->is_connected()) {
+        con.button_state |= digitalRead(con.aux->SER_PIN) & 1;
       }
     }
-    
-    pinMode(CONTROLLER_CLK_PIN, INPUT_PULLUP);
+
+    digitalWrite(CONTROLLER_CLK_PIN, HIGH);
     digitalWrite(CONTROLLER_CLK_PIN, LOW);
-    pinMode(CONTROLLER_CLK_PIN, OUTPUT);
   }
 }
