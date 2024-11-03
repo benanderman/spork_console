@@ -158,15 +158,6 @@ void loop() {
         }
         break;
       }
-      case MenuChoice::peripheral: {
-        bool quit = false;
-        while(!quit) {
-          MultiConsole multiConsole;
-          multiConsole.run_peripheral_mode();
-          quit = true;
-        }
-        break;
-      }
     }
   }
 }
