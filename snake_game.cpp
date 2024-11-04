@@ -130,11 +130,11 @@ bool SnakeGame::play() {
 
   byte palette[][3] = {
     {0, 0, 0},
-    {4, 16, 4},
-    {4, 4, 16},
-    {16, 4, 4},
-    {0, 0, 24},
-    {0, 0, 0},
+    {4, 16, 4},  // Player 1
+    {4, 4, 16},  // Player 2
+    {16, 4, 4},  // Food
+    {4, 12, 12}, // Tie winner
+    {0, 0, 0},   // Swap color for Graphics::end_game
   };
   disp.palette = palette;
   
@@ -152,12 +152,12 @@ bool SnakeGame::play() {
   unsigned long last_input = millis();
   int game_speed = 150;
   int input_speed = 5;
+  int winner = -1;
   
   while (player1.alive || player2.alive) {
     unsigned long now = millis();
     bool single_player = player1.alive ^ player2.alive;
 
-    int winner = -1;
     if (single_player) {
       winner = player1.alive ? 0 : 1;
     }
@@ -173,21 +173,21 @@ bool SnakeGame::play() {
       last_input = now;
     }
 
-    bool need_new_food = false;
+    bool food_was_eaten = false;
 
     if (now > last_cycle + game_speed) {
       last_cycle = now;
       for (int i = 0; i < 2; i++) {
         if (players[i]->alive) {
-          need_new_food = need_new_food || players[i]->cycle(food, !single_player);
-          if (need_new_food && AUDIO_ENABLED) {
+          food_was_eaten = players[i]->cycle(food, !single_player) || food_was_eaten;
+          if (food_was_eaten && AUDIO_ENABLED) {
             tone(AUDIO_PIN, i ? NOTE_F4 : NOTE_D5, 10);
           }
         }
       }
     }
 
-    if (need_new_food) {
+    if (food_was_eaten) {
       game_speed *= 0.98;
     }
 
@@ -197,19 +197,18 @@ bool SnakeGame::play() {
       }
     }
 
-    while (need_new_food) {
+    while (disp.get_pixel(food.x, food.y) != 0) {
       food = Point::rand_in_disp(disp);
-      if (!disp.get_pixel(food.x, food.y)) {
-        need_new_food = false;
-      }
     }
     disp.set_pixel(food.x, food.y, 3);
     
     disp.refresh();
     delay(1);
   }
-  
-  return Graphics::end_game(disp, controllers, controller_count, 4, palette, 5);
+
+  // If the winner is -1, that means it was a tie.
+  uint8_t winner_color = winner == -1 ? 4 : players[winner]->color;
+  return Graphics::end_game(disp, controllers, controller_count, winner_color, palette, 5);
 }
 
 bool SnakeGame::handle_input() {
