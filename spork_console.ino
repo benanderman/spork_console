@@ -125,7 +125,6 @@ void loop() {
         }
         break;
       }
-
       case MenuChoice::dice: {
         bool quit = false;
         while(!quit) {

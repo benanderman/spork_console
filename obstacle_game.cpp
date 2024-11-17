@@ -2,13 +2,12 @@
 #include "obstacle_game.h"
 #include "graphics.h"
 
-int entity_size = 2;
-int obstacles[] = {0, 8, 3, 5, 1, 7, 2, 4, 8, 5, 1, 5, 2, 6, 2, 8, 4};
+#define ENTITY_SIZE 2
 
 bool ObstacleGame::play() {
   randomSeed(millis());
   
-  byte palette[][3] = {
+  uint8_t palette[][3] = {
     {0, 0, 0},
     {4, 16, 4},
     {16, 4, 4},
@@ -22,8 +21,8 @@ bool ObstacleGame::play() {
   };
   disp.palette = palette;
   
-  player_x = disp.width / 2 - entity_size / 2;
-  player_y = disp.height - entity_size;
+  player_x = disp.width / 2 - ENTITY_SIZE / 2;
+  player_y = disp.height - ENTITY_SIZE;
   bool alive = true;
 
   long obstacle_cycle = 0;
@@ -59,7 +58,7 @@ bool ObstacleGame::play() {
     disp.clear_all();
 
     draw_obstacles(obstacle_cycle, level);
-    alive = !disp.set_rect(player_x, player_y, entity_size, entity_size, 1);
+    alive = !disp.set_rect(player_x, player_y, ENTITY_SIZE, ENTITY_SIZE, 1);
     
     disp.refresh();
     delay(1);
@@ -84,11 +83,11 @@ bool ObstacleGame::handle_input() {
   
   player_x += left ? -1 : 0;
   player_x += right ? 1 : 0;
-  player_x = max(0, min(disp.width - entity_size, player_x));
+  player_x = max(0, min(disp.width - ENTITY_SIZE, player_x));
   
   player_y += up ? -1 : 0;
   player_y += down ? 1 : 0;
-  player_y = max(0, min(disp.height - entity_size, player_y));
+  player_y = max(0, min(disp.height - ENTITY_SIZE, player_y));
 
   return controller[Controller::Button::start];
 }
@@ -97,11 +96,11 @@ void ObstacleGame::draw_obstacles(long cycle, int level) {
   int obstacle_count = sizeof(obstacles) / sizeof(*obstacles);
   for (int o = 0; o < obstacle_count; o++) {
     int total_height = (obstacle_count * 5);
-    int y = (cycle - entity_size - o * 5) % total_height;
+    int y = (cycle - ENTITY_SIZE - o * 5) % total_height;
     if (y < 1) {
-      obstacles[o] = random(disp.width - entity_size + 1);
+      obstacles[o] = random(disp.width - ENTITY_SIZE + 1);
     }
     byte color = 2 + level % 6;
-    disp.set_rect(obstacles[o], y, entity_size, entity_size, color);
+    disp.set_rect(obstacles[o], y, ENTITY_SIZE, ENTITY_SIZE, color);
   }
 }
