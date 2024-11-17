@@ -3,12 +3,15 @@
 #include "display.h"
 #include "neopixels.h"
 
-byte Display::get_pixel(int x, int y) {
+byte Display::get_pixel(int8_t x, int8_t y) {
   int index = y * width + x;
+  if (index < 0 || index >= MAX_DISPLAY_PIXELS) {
+    return 0;
+  }
   return state[index];
 }
 
-byte Display::set_pixel(int x, int y, byte val) {
+byte Display::set_pixel(int8_t x, int8_t y, byte val) {
   int index = y * width + x;
   if (index < 0 || index >= MAX_DISPLAY_PIXELS) {
     return false;
@@ -19,7 +22,7 @@ byte Display::set_pixel(int x, int y, byte val) {
   return old_value;
 }
 
-bool Display::set_rect(int x, int y, int width, int height, byte val) {
+bool Display::set_rect(int8_t x, int8_t y, int8_t width, int8_t height, byte val) {
   bool result = false;
   for (int cx = x; cx < x + width; cx++) {
     for (int cy = y; cy < y + height; cy++) {

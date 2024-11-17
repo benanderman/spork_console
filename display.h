@@ -4,7 +4,7 @@
 #include "config.h"
 #include "arduino.h"
 
-typedef uint32_t (*get_pixel_func_t)(int x, int y);
+typedef uint32_t (*get_pixel_func_t)(uint8_t x, uint8_t y);
 
 class Display {
   public:
@@ -15,29 +15,29 @@ class Display {
   } __attribute__((packed));
 
   Mode mode;
-  int width;
-  int height;
+  uint8_t width;
+  uint8_t height;
 
-  int RCLK_PIN;
-  int SRCLK_PIN;
-  int SER_PIN;
-  int OE_PIN;
+  uint8_t RCLK_PIN;
+  uint8_t SRCLK_PIN;
+  uint8_t SER_PIN;
+  uint8_t OE_PIN;
 
   uint8_t (*palette)[3];
 
-  Display(Mode mode, int width, int height,
-    int rclk_pin, int srclk_pin, int ser_pin, int oe_pin, bool neopixels) :
+  Display(Mode mode, uint8_t width, uint8_t height,
+    uint8_t rclk_pin, uint8_t srclk_pin, uint8_t ser_pin, uint8_t oe_pin, bool neopixels) :
     mode(mode), width(width), height(height),
     RCLK_PIN(rclk_pin), SRCLK_PIN(srclk_pin), SER_PIN(ser_pin), OE_PIN(oe_pin),
     palette(NULL), neopixels(neopixels) {}
 
   // Returns whether the pixel was on before
-  uint8_t set_pixel(int x, int y, uint8_t val);
+  uint8_t set_pixel(int8_t x, int8_t y, uint8_t val);
   
   // Returns whether any pixel being set was set before
-  bool set_rect(int x, int y, int width, int height, uint8_t val);
+  bool set_rect(int8_t x, int8_t y, int8_t width, int8_t height, uint8_t val);
   
-  uint8_t get_pixel(int x, int y);
+  uint8_t get_pixel(int8_t x, int8_t y);
   void clear_all();
   void refresh(get_pixel_func_t get_pixel_func = NULL);
   void set_brightness(uint8_t brightness);

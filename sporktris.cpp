@@ -67,18 +67,18 @@ Tetromino Tetromino::random_piece() {
       .points = { {0,2}, {1,2}, {2,2}, {1,3} }
     }
   };
-  const byte pieces_count = sizeof(pieces) / sizeof(*pieces);
+  const uint8_t pieces_count = sizeof(pieces) / sizeof(*pieces);
 
-  static byte random_set[pieces_count * 2];
-  const byte random_set_count = sizeof(random_set) / sizeof(*random_set);
-  static byte index = 0;
+  static uint8_t random_set[pieces_count * 2];
+  const uint8_t random_set_count = sizeof(random_set) / sizeof(*random_set);
+  static uint8_t index = 0;
   if (index == 0) {
-    for (byte i = 0; i < random_set_count; i++) {
+    for (uint8_t i = 0; i < random_set_count; i++) {
       random_set[i] = i % pieces_count;
     }
-    for (byte i = 0; i < random_set_count; i++) {
-      byte temp = random_set[i];
-      byte swap_index = random(random_set_count - i) + i;
+    for (uint8_t i = 0; i < random_set_count; i++) {
+      uint8_t temp = random_set[i];
+      uint8_t swap_index = random(random_set_count - i) + i;
       random_set[i] = random_set[swap_index];
       random_set[swap_index] = temp;
     }
@@ -118,7 +118,7 @@ Tetromino::Rect Tetromino::bounding_rect() {
   return rect;
 }
 
-byte Tetromino::Rect::center_x() {
+uint8_t Tetromino::Rect::center_x() {
   return (x + x2) / 2;
 }
 
@@ -137,7 +137,7 @@ Sporktris::Sporktris(Display& disp, Controller *controllers, int controller_coun
 bool Sporktris::play() {
   randomSeed(analogRead(A0));
   random(7);
-  byte palette[][3] = {
+  uint8_t palette[][3] = {
     {0, 0, 0},
     {16, 4, 4},
     {4, 16, 4},
@@ -151,7 +151,7 @@ bool Sporktris::play() {
   };
   disp.palette = palette;
   
-  byte board[MAX_DISPLAY_PIXELS];
+  uint8_t board[MAX_DISPLAY_PIXELS];
   memset(board, false, sizeof(board));
   this->board = board;
   need_new_piece = true;
