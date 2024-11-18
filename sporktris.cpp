@@ -8,86 +8,65 @@
 // Minimum milliseconds between button state changes
 #define BUTTON_DEBOUNCE_THRESHOLD 20
 
-Tetromino Tetromino::random_piece() {
-  Tetromino pieces[] = {
-    { // long
+Tetromino Tetromino::piece_of_type(uint8_t type) {
+  switch (type) {
+    case 0: return { // long
       .positions = 2,
       .axis_x = 1,
       .axis_y = 1,
       .cur_pos = 0,
       .color = 1,
       .points = { {1,0}, {1,1}, {1,2}, {1,3} }
-    },
-    { // L
+    };
+    case 1: return { // L
       .positions = 4,
       .axis_x = 1,
       .axis_y = 2,
       .cur_pos = 0,
       .color = 2,
       .points = { {0,2}, {1,2}, {2,2}, {2,3} }
-    },
-    { // S
+    };
+    case 2: return { // S
       .positions = 2,
       .axis_x = 1,
       .axis_y = 2,
       .cur_pos = 0,
       .color = 3,
       .points = { {1,2}, {2,2}, {0,3}, {1,3} }
-    },
-    { // #
+    };
+    case 3: return { // #
       .positions = 1,
       .axis_x = 1,
       .axis_y = 2,
       .cur_pos = 0,
       .color = 4,
       .points = { {1,2}, {2,2}, {1,3}, {2,3} }
-    },
-    { // L
+    };
+    case 4: return { // L
       .positions = 4,
       .axis_x = 1,
       .axis_y = 2,
       .cur_pos = 0,
       .color = 5,
       .points = { {0,2}, {1,2}, {2,2}, {0,3} }
-    },
-    { // S
+    };
+    case 5: return { // S
       .positions = 2,
       .axis_x = 1,
       .axis_y = 2,
       .cur_pos = 0,
       .color = 6,
       .points = { {0,2}, {1,2}, {1,3}, {2,3} }
-    },
-    { // T
+    };
+    case 6: return { // T
       .positions = 4,
       .axis_x = 1,
       .axis_y = 2,
       .cur_pos = 0,
       .color = 7,
       .points = { {0,2}, {1,2}, {2,2}, {1,3} }
-    }
+    };
   };
-  const uint8_t pieces_count = sizeof(pieces) / sizeof(*pieces);
-
-  static uint8_t random_set[pieces_count * 2];
-  const uint8_t random_set_count = sizeof(random_set) / sizeof(*random_set);
-  static uint8_t index = 0;
-  if (index == 0) {
-    for (uint8_t i = 0; i < random_set_count; i++) {
-      random_set[i] = i % pieces_count;
-    }
-    for (uint8_t i = 0; i < random_set_count; i++) {
-      uint8_t temp = random_set[i];
-      uint8_t swap_index = random(random_set_count - i) + i;
-      random_set[i] = random_set[swap_index];
-      random_set[swap_index] = temp;
-    }
-  }
-
-  Tetromino result = pieces[random_set[index]];
-  index = (index + 1) % random_set_count;
-
-  return result;
 }
 
 Tetromino Tetromino::rotated(bool cw) {
@@ -99,7 +78,7 @@ Tetromino Tetromino::rotated(bool cw) {
   
   Tetromino new_piece = *this;
   new_piece.cur_pos = (cur_pos + 1) % positions;
-  for (int i = 0; i < sizeof(points) / sizeof(*points); i++) {
+  for (uint8_t i = 0; i < sizeof(points) / sizeof(*points); i++) {
     new_piece.points[i][0] = axis_x + (axis_y - points[i][1]) * (cw ? -1 : 1);
     new_piece.points[i][1] = axis_y + (axis_x - points[i][0]) * (cw ? 1 : -1);
   }
@@ -109,7 +88,7 @@ Tetromino Tetromino::rotated(bool cw) {
 
 Tetromino::Rect Tetromino::bounding_rect() {
   Tetromino::Rect rect = {.x = 3, .y = 3, .x2 = 0, .y2 = 0};
-  for (int i = 0; i < sizeof(points) / sizeof(*points); i++) {
+  for (uint8_t i = 0; i < sizeof(points) / sizeof(*points); i++) {
     rect.x = min(rect.x, points[i][0]);
     rect.y = min(rect.y, points[i][1]);
     rect.x2 = max(rect.x2, points[i][0]);
@@ -118,8 +97,46 @@ Tetromino::Rect Tetromino::bounding_rect() {
   return rect;
 }
 
-uint8_t Tetromino::Rect::center_x() {
+int8_t Tetromino::Rect::center_x() {
   return (x + x2) / 2;
+}
+
+PlayerState::PlayerState() {
+  next_piece_index = 0;
+  line_count = 0;
+  level = 1;
+
+  memset(next_piece_types, false, sizeof(next_piece_types));
+  next_piece_index = 0;
+  cur_piece = Tetromino::piece_of_type(0);
+  piece_x = 0;
+  piece_y = 0;
+  need_new_piece = true;
+  clearing_lines = false;
+
+  last_cycle = millis();
+  cycle_length = 500;
+}
+
+Tetromino PlayerState::get_next_piece() {
+  const uint8_t next_piece_types_count = sizeof(next_piece_types) / sizeof(*next_piece_types);
+  static uint8_t next_piece_index = 0;
+  if (next_piece_index == 0) {
+    for (uint8_t i = 0; i < next_piece_types_count; i++) {
+      next_piece_types[i] = i % PIECE_COUNT;
+    }
+    for (uint8_t i = 0; i < next_piece_types_count; i++) {
+      uint8_t temp = next_piece_types[i];
+      uint8_t swap_index = random(next_piece_types_count - i) + i;
+      next_piece_types[i] = next_piece_types[swap_index];
+      next_piece_types[swap_index] = temp;
+    }
+  }
+
+  Tetromino result = Tetromino::piece_of_type(next_piece_types[next_piece_index]);
+  next_piece_index = (next_piece_index + 1) % next_piece_types_count;
+
+  return result;
 }
 
 Sporktris::Sporktris(Display& disp, Controller *controllers, uint8_t controller_count):
@@ -150,20 +167,14 @@ bool Sporktris::play() {
     {0, 0, 0}
   };
   disp.palette = palette;
+
+  player_states[0].alive = controllers[0].is_connected();
+  player_states[1].alive = controller_count > 1 && controllers[1].is_connected();
   
-  uint8_t board[MAX_DISPLAY_PIXELS];
   memset(board, false, sizeof(board));
-  this->board = board;
-  need_new_piece = true;
-  clearing_lines = false;
-  line_count = 0;
   paused = false;
 
-  bool alive = true;
-  unsigned long last_cycle = millis();
-  unsigned long cycle_length = 500;
-  int level = 1;
-  while (alive) {
+  while (player_states[0].alive || player_states[1].alive) {
     unsigned long now = millis();
 
     bool should_exit = handle_input(now);
@@ -177,21 +188,23 @@ bool Sporktris::play() {
       continue;
     }
 
-    if (need_new_piece) {
-      cur_piece = Tetromino::random_piece();
-      Tetromino::Rect rect = cur_piece.bounding_rect();
-      piece_x = disp.width / 2 - rect.x - rect.center_x();
-      // TODO: Figure out why this doesn't work with negative numbers
-      piece_y = -rect.y2 - 1;
-      need_new_piece = false;
-    }
+    for (uint8_t p = 0; p < sizeof(player_states) / sizeof(*player_states); p++) {
+      PlayerState& player = player_states[p];
+      if (player.need_new_piece) {
+        player.cur_piece = player.get_next_piece();
+        Tetromino::Rect rect = player.cur_piece.bounding_rect();
+        player.piece_x = disp.width / 2 - rect.x - rect.center_x();
+        player.piece_y = -rect.y2 - 1;
+        player.need_new_piece = false;
+      }
 
-    if (now > last_cycle + cycle_length) {
-      alive = cycle();
-      last_cycle = now;
-      if (line_count / 10 > level) {
-        level++;
-        cycle_length = (unsigned long)(float(cycle_length + 35) / 1.5);
+      if (now > player.last_cycle + player.cycle_length) {
+        cycle(p);
+        player.last_cycle = now;
+        if (player.line_count / 10 + 1 > player.level) {
+          player.level++;
+          player.cycle_length = (unsigned long)(float(player.cycle_length + 35) / 1.5);
+        }
       }
     }
 
@@ -201,10 +214,12 @@ bool Sporktris::play() {
   return Graphics::end_game(disp, controllers, controller_count, 8, palette, 9);
 }
 
-bool Sporktris::handle_button_down(Controller::Button button, int controller_index) {
+bool Sporktris::handle_button_down(Controller::Button button, uint8_t controller_index) {
   if (paused && button != Controller::Button::start && button != Controller::Button::select) {
     return false;
   }
+
+  PlayerState& player_state = player_states[controller_index];
   
   switch (button) {
     case Controller::Button::start: {
@@ -217,56 +232,60 @@ bool Sporktris::handle_button_down(Controller::Button button, int controller_ind
     }
 
     case Controller::Button::left: {
-      if (is_valid_position(cur_piece, piece_x - 1, piece_y)) {
-        piece_x--;
+      if (is_valid_position(controller_index, player_state.cur_piece, player_state.piece_x - 1, player_state.piece_y)) {
+        player_state.piece_x--;
       }
       return false;
     }
 
     case Controller::Button::right: {
-      if (is_valid_position(cur_piece, piece_x + 1, piece_y)) {
-        piece_x++;
+      if (is_valid_position(controller_index, player_state.cur_piece, player_state.piece_x + 1, player_state.piece_y)) {
+        player_state.piece_x++;
       }
       return false;
     }
 
     case Controller::Button::down: {
-      if (is_valid_position(cur_piece, piece_x, piece_y + 1)) {
-        piece_y++;
+      if (is_valid_position(controller_index, player_state.cur_piece, player_state.piece_x, player_state.piece_y + 1)) {
+        player_state.piece_y++;
       }
       return false;
     }
 
     case Controller::Button::up: {
-      while (is_valid_position(cur_piece, piece_x, piece_y + 1)) {
-        piece_y++;
+      while (is_valid_position(controller_index, player_state.cur_piece, player_state.piece_x, player_state.piece_y + 1)) {
+        player_state.piece_y++;
       }
       return false;
     }
 
     case Controller::Button::a: {
-      Tetromino new_piece = cur_piece.rotated(true);
-      if (is_valid_position(new_piece, piece_x, piece_y)) {
-        cur_piece = new_piece;
+      Tetromino new_piece = player_state.cur_piece.rotated(true);
+      if (is_valid_position(controller_index, new_piece, player_state.piece_x, player_state.piece_y)) {
+        player_state.cur_piece = new_piece;
       }
       return false;
     }
 
     case Controller::Button::b: {
-      Tetromino new_piece = cur_piece.rotated(false);
-      if (is_valid_position(new_piece, piece_x, piece_y)) {
-        cur_piece = new_piece;
+      Tetromino new_piece = player_state.cur_piece.rotated(false);
+      if (is_valid_position(controller_index, new_piece, player_state.piece_x, player_state.piece_y)) {
+        player_state.cur_piece = new_piece;
       }
       return false;
     }
   }
 }
 
-bool Sporktris::cycle() {
+void Sporktris::cycle(uint8_t player_index) {
+  PlayerState& player_state = player_states[player_index];
+  if (!player_state.alive) {
+    return;
+  }
   bool alive = true;
 
   // Move all the lines down to fill the cleared lines, instead of moving the piece
-  if (clearing_lines) {
+  if (player_state.clearing_lines) {
     int top = disp.height - 1;
     for (int y = disp.height - 1; y >= 0; y--) {
       bool is_clear = true;
@@ -286,19 +305,20 @@ bool Sporktris::cycle() {
         top--;
       }
     }
-    clearing_lines = false;
+    player_state.clearing_lines = false;
     return true;
   }
   
-  if (is_valid_position(cur_piece, piece_x, piece_y + 1)) {
-    piece_y++;
+  Tetromino& cur_piece = player_state.cur_piece;
+  if (is_valid_position(player_index, cur_piece, player_state.piece_x, player_state.piece_y + 1)) {
+    player_state.piece_y++;
   } else {
     // Apply piece to the board
-    int top = disp.height;
-    int lines_just_cleared = 0;
-    for (int i = 0; i < sizeof(cur_piece.points) / sizeof(*cur_piece.points); i++) {
-      int px = cur_piece.points[i][0] + piece_x;
-      int py = cur_piece.points[i][1] + piece_y;
+    int8_t top = disp.height;
+    uint8_t lines_just_cleared = 0;
+    for (uint8_t i = 0; i < sizeof(cur_piece.points) / sizeof(*cur_piece.points); i++) {
+      int8_t px = cur_piece.points[i][0] + player_state.piece_x;
+      int8_t py = cur_piece.points[i][1] + player_state.piece_y;
       top = min(py, top);
       if (py < 0) {
         continue;
@@ -313,8 +333,8 @@ bool Sporktris::cycle() {
       }
       if (cleared_line) {
         memset(board + py * disp.width, false, disp.width);
-        clearing_lines = true;
-        line_count++;
+        player_state.clearing_lines = true;
+        player_state.line_count++;
         lines_just_cleared++;
       }
     }
@@ -323,43 +343,45 @@ bool Sporktris::cycle() {
     TONE_IF_ENABLED(tones[lines_just_cleared], 100);
     
     // The player is only alive if the top of the piece that just landed is fully on the board
-    alive = top >= 0;
+    player_state.alive = top >= 0;
     
-    need_new_piece = true;
+    player_state.need_new_piece = true;
   }
-  
-  return alive;
 }
 
 void Sporktris::draw() {
+  // TODO: Do both players once we can support drawing both to the board.
+  PlayerState& player_state = player_states[0];
+
   disp.clear_all();
 
   // Draw blocks on the board
-  for (int x = 0; x < disp.width; x++) {
-    for (int y = 0; y < disp.height; y++) {
+  for (int8_t x = 0; x < disp.width; x++) {
+    for (int8_t y = 0; y < disp.height; y++) {
       disp.set_pixel(x, y, board[y * disp.width + x]);
     }
   }
 
   // Draw current piece
-  for (int i = 0; i < sizeof(cur_piece.points) / sizeof(*cur_piece.points); i++) {
-    int px = cur_piece.points[i][0] + piece_x;
-    int py = cur_piece.points[i][1] + piece_y;
+  Tetromino& cur_piece = player_state.cur_piece;
+  for (int8_t i = 0; i < sizeof(cur_piece.points) / sizeof(*cur_piece.points); i++) {
+    int8_t px = cur_piece.points[i][0] + player_state.piece_x;
+    int8_t py = cur_piece.points[i][1] + player_state.piece_y;
     disp.set_pixel(px, py, cur_piece.color);
   }
   
   disp.refresh();
 }
 
-bool Sporktris::is_valid_position(Tetromino piece, int x, int y) {
+bool Sporktris::is_valid_position(uint8_t player_index, Tetromino piece, int8_t x, int8_t y) {
   Tetromino::Rect rect = piece.bounding_rect();
   if (rect.x + x < 0 || rect.x2 + x >= disp.width ||
       rect.y2 + y >= disp.height) {
     return false;
   }
-  for (int i = 0; i < sizeof(piece.points) / sizeof(*piece.points); i++) {
-    int px = piece.points[i][0] + x;
-    int py = piece.points[i][1] + y;
+  for (int8_t i = 0; i < sizeof(piece.points) / sizeof(*piece.points); i++) {
+    int8_t px = piece.points[i][0] + x;
+    int8_t py = piece.points[i][1] + y;
     if (py >= 0 && board[py * disp.width + px]) {
       return false;
     }
