@@ -3,7 +3,7 @@
 #include "display.h"
 #include "neopixels.h"
 
-byte Display::get_pixel(int8_t x, int8_t y) {
+uint8_t Display::get_pixel(int8_t x, int8_t y) {
   int index = y * width + x;
   if (index < 0 || index >= MAX_DISPLAY_PIXELS) {
     return 0;
@@ -11,21 +11,21 @@ byte Display::get_pixel(int8_t x, int8_t y) {
   return state[index];
 }
 
-byte Display::set_pixel(int8_t x, int8_t y, byte val) {
-  int index = y * width + x;
+uint8_t Display::set_pixel(int8_t x, int8_t y, uint8_t val) {
+  int16_t index = y * width + x;
   if (index < 0 || index >= MAX_DISPLAY_PIXELS) {
     return false;
   }
-  byte old_value = state[index];
+  uint8_t old_value = state[index];
   state[index] = val;
   
   return old_value;
 }
 
-bool Display::set_rect(int8_t x, int8_t y, int8_t width, int8_t height, byte val) {
+bool Display::set_rect(int8_t x, int8_t y, int8_t width, int8_t height, uint8_t val) {
   bool result = false;
-  for (int cx = x; cx < x + width; cx++) {
-    for (int cy = y; cy < y + height; cy++) {
+  for (int8_t cx = x; cx < x + width; cx++) {
+    for (int8_t cy = y; cy < y + height; cy++) {
       result = set_pixel(cx, cy, val) || result;
     }
   }
@@ -37,9 +37,9 @@ void Display::clear_all() {
 }
 
 void Display::refresh(get_pixel_func_t get_pixel_func) {
-  int total_pixels = width * height;
-  byte r_shift = 0;
-  byte l_shift = 0;
+  uint8_t total_pixels = width * height;
+  uint8_t r_shift = 0;
+  uint8_t l_shift = 0;
   switch (brightness) {
     case 0:
     r_shift = 7;
@@ -60,7 +60,7 @@ void Display::refresh(get_pixel_func_t get_pixel_func) {
       i = total_pixels - 1 - i;
     }
     
-    int x, y;
+    int8_t x, y;
     switch (mode) {
       case Mode::rows: {
         x = i % width;
@@ -87,14 +87,14 @@ void Display::refresh(get_pixel_func_t get_pixel_func) {
       }
     }
     
-    byte val = get_pixel(x, y);
+    uint8_t val = get_pixel(x, y);
 
     if (neopixels) {
       if (palette) {
-        byte *pixel = palette[val];
-        byte r = pixel[0];
-        byte g = pixel[1];
-        byte b = pixel[2];
+        uint8_t *pixel = palette[val];
+        uint8_t r = pixel[0];
+        uint8_t g = pixel[1];
+        uint8_t b = pixel[2];
         if (get_pixel_func) {
           uint32_t p = get_pixel_func(x, y);
           r = (p >> 24) & 0xFF;
@@ -103,7 +103,7 @@ void Display::refresh(get_pixel_func_t get_pixel_func) {
         }
         Neopixels::sendPixel((r >> r_shift) << l_shift, (g >> r_shift) << l_shift, (b >> r_shift) << l_shift);
       } else {
-        byte pixel_brightness = (val ? brightness : 0);
+        uint8_t pixel_brightness = (val ? brightness : 0);
         Neopixels::sendPixel(pixel_brightness, pixel_brightness, pixel_brightness);
       }
     } else {
@@ -120,7 +120,7 @@ void Display::refresh(get_pixel_func_t get_pixel_func) {
   }
 }
 
-void Display::set_brightness(byte brightness) {
+void Display::set_brightness(uint8_t brightness) {
   // Output enable on 595 shift registers is on when grounded
   this->brightness = brightness;
   if (BRIGHTNESS_ENABLED) {
@@ -128,6 +128,6 @@ void Display::set_brightness(byte brightness) {
   }
 }
 
-byte Display::get_brightness() {
+uint8_t Display::get_brightness() {
   return brightness;
 }

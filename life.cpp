@@ -1,7 +1,7 @@
 #include "life.h"
 #include "graphics.h"
 
-Life::Life(Display& disp, Controller *controllers, int controller_count):
+Life::Life(Display& disp, Controller *controllers, uint8_t controller_count):
   InputProcessor(controllers, controller_count),
   disp(disp), paused(true), cursor_x(disp.width / 2), cursor_y(disp.height / 2) {
   button_conf[Controller::Button::b] = { .initial = 0, .subsequent = 0};
@@ -28,7 +28,7 @@ bool Life::play() {
   };
   disp.palette = palette;
 
-  move_cursor(cursor_x, cursor_y);
+  move_cursor(cursor_x, cursor_y, 0);
 
   disp.refresh();
 
@@ -56,7 +56,7 @@ bool Life::play() {
   return true;
 }
 
-bool Life::handle_button_down(Controller::Button button, int controller_index) {
+bool Life::handle_button_down(Controller::Button button, uint8_t controller_index) {
   switch (button) {
     case Controller::Button::start: {
       return true;
@@ -101,8 +101,8 @@ bool Life::handle_button_down(Controller::Button button, int controller_index) {
   return false;
 }
 
-void Life::move_cursor(int x, int y, int controller_index) {
-  byte pixel = disp.get_pixel(cursor_x, cursor_y);
+void Life::move_cursor(int8_t x, int8_t y, uint8_t controller_index) {
+  uint8_t pixel = disp.get_pixel(cursor_x, cursor_y);
   pixel &= ~(1 << 2);
   disp.set_pixel(cursor_x, cursor_y, pixel);
   
@@ -113,16 +113,14 @@ void Life::move_cursor(int x, int y, int controller_index) {
   pixel |= 1 << 2;
   disp.set_pixel(cursor_x, cursor_y, pixel);
 
-  if (controller_index != -1) {
-    if (controllers[controller_index].handler_states[Controller::Button::a].is_pressed()) {
-      set_cell(cursor_x, cursor_y, true);
-    } else if (controllers[controller_index].handler_states[Controller::Button::b].is_pressed()) {
-      set_cell(cursor_x, cursor_y, false);
-    }
+  if (controllers[controller_index].handler_states[Controller::Button::a].is_pressed()) {
+    set_cell(cursor_x, cursor_y, true);
+  } else if (controllers[controller_index].handler_states[Controller::Button::b].is_pressed()) {
+    set_cell(cursor_x, cursor_y, false);
   }
 }
 
-void Life::set_cell(int x, int y, bool value) {
+void Life::set_cell(uint8_t x, uint8_t y, bool value) {
   byte cell = disp.get_pixel(x, y);
   cell = value ? cell | 2 : cell & ~2;
   disp.set_pixel(x, y, cell);
@@ -140,18 +138,18 @@ void Life::cycle() {
   };
 
   // 3 is 00000011
-  for (int x = 0; x < disp.width; x++) {
-    for (int y = 0; y < disp.height; y++) {
+  for (uint8_t x = 0; x < disp.width; x++) {
+    for (uint8_t y = 0; y < disp.height; y++) {
       byte cell = disp.get_pixel(x, y);
       cell = ((cell & 3) >> 1) | (cell & ~3);
       disp.set_pixel(x, y, cell);
     }
   }
   
-  for (int x = 0; x < disp.width; x++) {
-    for (int y = 0; y < disp.height; y++) {
-      int alive_neighbors = 0;
-      for (int i = 0; i < sizeof(neighbors) / sizeof(*neighbors); i++) {
+  for (uint8_t x = 0; x < disp.width; x++) {
+    for (uint8_t y = 0; y < disp.height; y++) {
+      uint8_t alive_neighbors = 0;
+      for (uint8_t i = 0; i < sizeof(neighbors) / sizeof(*neighbors); i++) {
         if (disp.get_pixel((x + neighbors[i].x + disp.width) % disp.width, (y + neighbors[i].y + disp.height) % disp.height) & 1) {
           alive_neighbors++;
         }

@@ -4,7 +4,7 @@
 // Minimum milliseconds between button state changes
 #define BUTTON_DEBOUNCE_THRESHOLD (unsigned long)20
 
-InputProcessor::InputProcessor(Controller *controllers, int controller_count):
+InputProcessor::InputProcessor(Controller *controllers, uint8_t controller_count):
   controllers(controllers), controller_count(controller_count), last_process(0) {
   
   button_conf[Controller::Button::b] = { .initial = 500, .subsequent = 500};
@@ -104,10 +104,10 @@ bool InputProcessor::handle_input(unsigned long now) {
   return should_exit;
 }
 
-bool InputProcessor::handle_button_down(Controller::Button button, int controller_index) {
+bool InputProcessor::handle_button_down(Controller::Button button, uint8_t controller_index) {
   return false;
 }
 
-bool InputProcessor::handle_button_up(Controller::Button button, int controller_index) {
+bool InputProcessor::handle_button_up(Controller::Button button, uint8_t controller_index) {
   return false;
 }

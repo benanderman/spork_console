@@ -28,7 +28,7 @@ class Sporktris: public InputProcessor {
   public:
   Display& disp;
 
-  Sporktris(Display& disp, Controller *controllers, int controller_count);
+  Sporktris(Display& disp, Controller *controllers, uint8_t controller_count);
 
   bool play();
 

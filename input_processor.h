@@ -19,17 +19,17 @@ class InputProcessor {
   public:
   ButtonRepeatDelays button_conf[Controller::Button::__count];
   Controller *controllers;
-  int controller_count;
+  uint8_t controller_count;
   
-  InputProcessor(Controller *controllers, int controller_count);
+  InputProcessor(Controller *controllers, uint8_t controller_count);
 
   // Call from run loop; handles getting state from controllers, debouncing, and key repeat.
   // Calls `handle_button_down` and `handle_button_up`.
   bool handle_input(unsigned long now);
 
   // Override to handle button presses, return whether to exit.
-  virtual bool handle_button_down(Controller::Button button, int controller_index);
-  virtual bool handle_button_up(Controller::Button button, int controller_index);
+  virtual bool handle_button_down(Controller::Button button, uint8_t controller_index);
+  virtual bool handle_button_up(Controller::Button button, uint8_t controller_index);
 
   private:
   unsigned long last_process;
