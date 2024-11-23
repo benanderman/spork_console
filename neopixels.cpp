@@ -29,7 +29,7 @@
 
 #define NS_TO_CYCLES(n) ( (n) / NS_PER_CYCLE )
 
-// Actually send a bit to the string. We must to drop to asm to ensure that the compiler does
+// Send a bit to the string. We must to drop to asm to ensure that the compiler does
 // not reorder things and make it so the delay happens in the wrong place.
 static inline void sendBit(bool bitVal) {
   if (bitVal) {        // 1 bit
@@ -59,8 +59,8 @@ static inline void sendBit(bool bitVal) {
       "nop \n\t"
       ".endr \n\t"
       ::
-      [port]    "I" (_SFR_IO_ADDR(PIXEL_PORT)),
-      [bit]   "I" (PIXEL_BIT),
+      [port]      "I" (_SFR_IO_ADDR(PIXEL_PORT)),
+      [bit]       "I" (PIXEL_BIT),
       [onCycles]  "I" (NS_TO_CYCLES(T0H) - 2),
       [offCycles] "I" (NS_TO_CYCLES(T0L) - 2)
     );
@@ -71,55 +71,110 @@ static inline void sendBit(bool bitVal) {
 }
 
 // Send bit to PIXEL_PORT / PIXEL_BIT, and PERIPHERAL_PIXEL_PORT / PERIPHERAL_PIXEL_BIT at the same time.
-static inline void dualSendBit(bool bitVal) {
+static inline void dualSendBit(bool bitVal, bool peripheralBitVal) {
   if (bitVal) {
-    asm volatile (
-      "sbi %[port], %[bit] \n\t"                      // Set the output bit
-      "sbi %[peripheralPort], %[peripheralBit] \n\t"  // Set the peripheral output bit
-      ".rept %[onCycles] \n\t"                        // Execute NOPs to delay exactly the specified number of cycles
-      "nop \n\t"
-      ".endr \n\t"
-      "cbi %[port], %[bit] \n\t"                      // Clear the output bit
-      "cbi %[peripheralPort], %[peripheralBit] \n\t"  // Clear the peripheral output bit
-      ".rept %[offCycles] \n\t"                       // Execute NOPs to delay exactly the specified number of cycles
-      "nop \n\t"
-      ".endr \n\t"
-      ::
-      [port]           "I" (_SFR_IO_ADDR(PIXEL_PORT)),
-      [bit]            "I" (PIXEL_BIT),
-      [peripheralPort] "I" (_SFR_IO_ADDR(PERIPHERAL_PIXEL_PORT)),
-      [peripheralBit]  "I" (PERIPHERAL_PIXEL_BIT),
-      [onCycles]       "I" (NS_TO_CYCLES(T1H) - 4),    // 1-bit width less overhead  for the actual bit setting, note that this delay could be longer and everything would still work
-      [offCycles]      "I" (NS_TO_CYCLES(T1L) - 4)     // Minimum interbit delay. Note that we probably don't need this at all since the loop overhead will be enough, but here for correctness
-    );
+    if (peripheralBitVal) {
+      asm volatile (
+        "sbi %[port], %[bit] \n\t"                      // Set the output bit
+        "sbi %[peripheralPort], %[peripheralBit] \n\t"  // Set the peripheral output bit
+        ".rept %[onCycles] \n\t"                        // Execute NOPs to delay exactly the specified number of cycles
+        "nop \n\t"
+        ".endr \n\t"
+        "cbi %[port], %[bit] \n\t"                      // Clear the output bit
+        "cbi %[peripheralPort], %[peripheralBit] \n\t"  // Clear the peripheral output bit
+        ".rept %[offCycles] \n\t"                       // Execute NOPs to delay exactly the specified number of cycles
+        "nop \n\t"
+        ".endr \n\t"
+        ::
+        [port]           "I" (_SFR_IO_ADDR(PIXEL_PORT)),
+        [bit]            "I" (PIXEL_BIT),
+        [peripheralPort] "I" (_SFR_IO_ADDR(PERIPHERAL_PIXEL_PORT)),
+        [peripheralBit]  "I" (PERIPHERAL_PIXEL_BIT),
+        [onCycles]       "I" (NS_TO_CYCLES(T1H) - 4),    // 1-bit width less overhead  for the actual bit setting, note that this delay could be longer and everything would still work
+        [offCycles]      "I" (NS_TO_CYCLES(T1L) - 4)     // Minimum interbit delay. Note that we probably don't need this at all since the loop overhead will be enough, but here for correctness
+      );
+    } else {
+      asm volatile (
+        "sbi %[port], %[bit] \n\t"                      // Set the output bit
+        "sbi %[peripheralPort], %[peripheralBit] \n\t"  // Set the peripheral output bit
+        ".rept %[onCycles] \n\t"                        // Execute NOPs to delay exactly the specified number of cycles
+        "nop \n\t"
+        ".endr \n\t"
+        "cbi %[peripheralPort], %[peripheralBit] \n\t"  // Clear the peripheral output bit
+        ".rept %[extraOnCycles] \n\t"
+        "nop \n\t"
+        ".endr \n\t"
+        "cbi %[port], %[bit] \n\t"                      // Clear the output bit
+        ".rept %[offCycles] \n\t"
+        "nop \n\t"
+        ".endr \n\t"
+        ::
+        [port]           "I" (_SFR_IO_ADDR(PIXEL_PORT)),
+        [bit]            "I" (PIXEL_BIT),
+        [peripheralPort] "I" (_SFR_IO_ADDR(PERIPHERAL_PIXEL_PORT)),
+        [peripheralBit]  "I" (PERIPHERAL_PIXEL_BIT),
+        [onCycles]       "I" (NS_TO_CYCLES(T0H) - 2),        // 1-bit width less overhead  for the actual bit setting, note that this delay could be longer and everything would still work
+        [extraOnCycles]  "I" (NS_TO_CYCLES(T1H - T0H) - 4),  // Cycles after turning the first pin off
+        [offCycles]      "I" (NS_TO_CYCLES(T0L) - 4)         // Minimum interbit delay. Note that we probably don't need this at all since the loop overhead will be enough, but here for correctness
+      );
+    }
   } else {
-    asm volatile (
-      "sbi %[port], %[bit] \n\t"                      // Set the output bit
-      "sbi %[peripheralPort], %[peripheralBit] \n\t"  // Set the peripheral output bit
-      ".rept %[onCycles] \n\t"                        // Now timing actually matters. The 0-bit must be long enough to be detected but not too long or it will be a 1-bit
-      "nop \n\t"                                      // Execute NOPs to delay exactly the specified number of cycles
-      ".endr \n\t"
-      "cbi %[port], %[bit] \n\t"                      // Clear the output bit
-      "cbi %[peripheralPort], %[peripheralBit] \n\t"  // Clear the peripheral output bit
-      ".rept %[offCycles] \n\t"                       // Execute NOPs to delay exactly the specified number of cycles
-      "nop \n\t"
-      ".endr \n\t"
-      ::
-      [port]           "I" (_SFR_IO_ADDR(PIXEL_PORT)),
-      [bit]            "I" (PIXEL_BIT),
-      [peripheralPort] "I" (_SFR_IO_ADDR(PERIPHERAL_PIXEL_PORT)),
-      [peripheralBit]  "I" (PERIPHERAL_PIXEL_BIT),
-      [onCycles]       "I" (NS_TO_CYCLES(T0H) - 4),
-      [offCycles]      "I" (NS_TO_CYCLES(T0L) - 4)
-    );
+    if (peripheralBitVal) {
+      asm volatile (
+        "sbi %[port], %[bit] \n\t"                      // Set the output bit
+        "sbi %[peripheralPort], %[peripheralBit] \n\t"  // Set the peripheral output bit
+        ".rept %[onCycles] \n\t"                        // Execute NOPs to delay exactly the specified number of cycles
+        "nop \n\t"
+        ".endr \n\t"
+        "cbi %[port], %[bit] \n\t"                      // Clear the output bit
+        ".rept %[extraOnCycles] \n\t"
+        "nop \n\t"
+        ".endr \n\t"
+        "cbi %[peripheralPort], %[peripheralBit] \n\t"  // Clear the peripheral output bit
+        ".rept %[offCycles] \n\t"                       // Execute NOPs to delay exactly the specified number of cycles
+        "nop \n\t"
+        ".endr \n\t"
+        ::
+        [port]           "I" (_SFR_IO_ADDR(PIXEL_PORT)),
+        [bit]            "I" (PIXEL_BIT),
+        [peripheralPort] "I" (_SFR_IO_ADDR(PERIPHERAL_PIXEL_PORT)),
+        [peripheralBit]  "I" (PERIPHERAL_PIXEL_BIT),
+        [onCycles]       "I" (NS_TO_CYCLES(T0H) - 2),        // 1-bit width less overhead  for the actual bit setting, note that this delay could be longer and everything would still work
+        [extraOnCycles]  "I" (NS_TO_CYCLES(T1H - T0H) - 4),  // Cycles after turning the first pin off
+        [offCycles]      "I" (NS_TO_CYCLES(T0L) - 4)         // Minimum interbit delay. Note that we probably don't need this at all since the loop overhead will be enough, but here for correctness
+      );
+    } else {
+      asm volatile (
+        "sbi %[port], %[bit] \n\t"                      // Set the output bit
+        "sbi %[peripheralPort], %[peripheralBit] \n\t"  // Set the peripheral output bit
+        ".rept %[onCycles] \n\t"                        // Now timing actually matters. The 0-bit must be long enough to be detected but not too long or it will be a 1-bit
+        "nop \n\t"                                      // Execute NOPs to delay exactly the specified number of cycles
+        ".endr \n\t"
+        "cbi %[port], %[bit] \n\t"                      // Clear the output bit
+        "cbi %[peripheralPort], %[peripheralBit] \n\t"  // Clear the peripheral output bit
+        ".rept %[offCycles] \n\t"                       // Execute NOPs to delay exactly the specified number of cycles
+        "nop \n\t"
+        ".endr \n\t"
+        ::
+        [port]           "I" (_SFR_IO_ADDR(PIXEL_PORT)),
+        [bit]            "I" (PIXEL_BIT),
+        [peripheralPort] "I" (_SFR_IO_ADDR(PERIPHERAL_PIXEL_PORT)),
+        [peripheralBit]  "I" (PERIPHERAL_PIXEL_BIT),
+        [onCycles]       "I" (NS_TO_CYCLES(T0H) - 4),
+        [offCycles]      "I" (NS_TO_CYCLES(T0L) - 4)
+      );
+    }
   }
 }
   
-static inline void sendByte( unsigned char byte ) {
+static void Neopixels::sendByte(unsigned char byte, unsigned char peripheralByte) {
   for (unsigned char bit = 0; bit < 8; bit++ ) {
-    dualSendBit(bitRead(byte, 7));            // Neopixel wants bit in highest-to-lowest order
-                                              // so send highest bit (bit #7 in an 8-bit byte since they start at 0)
-    byte <<= 1;                               // and then shift left so bit 6 moves into 7, 5 moves into 6, etc
+    // Neopixel wants bit in highest-to-lowest order
+    // so send highest bit (bit #7 in an 8-bit byte since they start at 0)
+    // and then shift left so bit 6 moves into 7, 5 moves into 6, etc.
+    dualSendBit(bitRead(byte, 7), bitRead(peripheralByte, 7));
+    byte <<= 1;
+    peripheralByte <<= 1;
   }
 } 
   
@@ -129,9 +184,9 @@ static void Neopixels::ledSetup() {
 
 static void Neopixels::sendPixel(unsigned char r, unsigned char g, unsigned char b)  {
   cli();
-  sendByte(g); // Neopixel wants colors in green then red then blue order
-  sendByte(r);
-  sendByte(b);
+  sendByte(g, g); // Neopixel wants colors in green then red then blue order
+  sendByte(r, r);
+  sendByte(b, b);
   sei();
 }
 

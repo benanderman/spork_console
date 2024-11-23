@@ -222,7 +222,7 @@ MenuChoice Menu::choose(MenuChoice initial_option) {
       options[looped_i].draw(disp, 0, 10 * (i - option_index) + (disp.height / 4), i == option_index);
     }
     
-    disp.refresh(get_pixel_func);
+    disp.refresh(false, get_pixel_func);
     delay(4);
   }
 

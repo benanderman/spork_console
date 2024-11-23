@@ -39,7 +39,7 @@ class Display {
   
   uint8_t get_pixel(int8_t x, int8_t y);
   void clear_all();
-  void refresh(get_pixel_func_t get_pixel_func = NULL);
+  void refresh(bool multi_display = false, get_pixel_func_t get_pixel_func = NULL);
   void set_brightness(uint8_t brightness);
   uint8_t get_brightness();
   

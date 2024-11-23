@@ -106,7 +106,7 @@ PlayerState::PlayerState() {
   line_count = 0;
   level = 1;
 
-  memset(next_piece_types, false, sizeof(next_piece_types));
+  memset(next_piece_types, 0, sizeof(next_piece_types));
   next_piece_index = 0;
   cur_piece = Tetromino::piece_of_type(0);
   piece_x = 0;
@@ -120,7 +120,6 @@ PlayerState::PlayerState() {
 
 Tetromino PlayerState::get_next_piece() {
   const uint8_t next_piece_types_count = sizeof(next_piece_types) / sizeof(*next_piece_types);
-  static uint8_t next_piece_index = 0;
   if (next_piece_index == 0) {
     for (uint8_t i = 0; i < next_piece_types_count; i++) {
       next_piece_types[i] = i % PIECE_COUNT;
@@ -171,7 +170,7 @@ bool Sporktris::play() {
   player_states[0].alive = controllers[0].is_connected();
   player_states[1].alive = controller_count > 1 && controllers[1].is_connected();
   
-  memset(board, false, sizeof(board));
+  memset(board, 0, sizeof(board));
   paused = false;
 
   while (player_states[0].alive || player_states[1].alive) {
@@ -282,7 +281,6 @@ void Sporktris::cycle(uint8_t player_index) {
   if (!player_state.alive) {
     return;
   }
-  bool alive = true;
 
   // Move all the lines down to fill the cleared lines, instead of moving the piece
   if (player_state.clearing_lines) {
@@ -290,15 +288,17 @@ void Sporktris::cycle(uint8_t player_index) {
     for (int y = disp.height - 1; y >= 0; y--) {
       bool is_clear = true;
       for (int x = 0; x < disp.width; x++) {
-        if (board[y * disp.width + x]) {
+        if (get_board_cell(player_index, x, y)) {
           is_clear = false;
           break;
         }
       }
       
       if (top != y) {
-        memcpy(&board[top * disp.width], &board[y * disp.width], disp.width);
-        memset(&board[y * disp.width], 0, disp.width);
+        for (int x = 0; x < disp.width; x++) {
+          set_board_cell(player_index, x, top, get_board_cell(player_index, x, y));
+          set_board_cell(player_index, x, y, 0);
+        }
       }
       
       if (!is_clear) {
@@ -306,7 +306,7 @@ void Sporktris::cycle(uint8_t player_index) {
       }
     }
     player_state.clearing_lines = false;
-    return true;
+    return;
   }
   
   Tetromino& cur_piece = player_state.cur_piece;
@@ -323,16 +323,18 @@ void Sporktris::cycle(uint8_t player_index) {
       if (py < 0) {
         continue;
       }
-      board[py * disp.width + px] = cur_piece.color;
+      set_board_cell(player_index, px, py, cur_piece.color);
       
       bool cleared_line = true;
       for (int x = 0; x < disp.width; x++) {
-        if (!board[py * disp.width + x]) {
+        if (!get_board_cell(player_index, x, py)) {
           cleared_line = false;
         }
       }
       if (cleared_line) {
-        memset(board + py * disp.width, false, disp.width);
+        for (int x = 0; x < disp.width; x++) {
+          set_board_cell(player_index, x, py, 0);
+        }
         player_state.clearing_lines = true;
         player_state.line_count++;
         lines_just_cleared++;
@@ -350,27 +352,32 @@ void Sporktris::cycle(uint8_t player_index) {
 }
 
 void Sporktris::draw() {
-  // TODO: Do both players once we can support drawing both to the board.
-  PlayerState& player_state = player_states[0];
-
   disp.clear_all();
 
   // Draw blocks on the board
   for (int8_t x = 0; x < disp.width; x++) {
     for (int8_t y = 0; y < disp.height; y++) {
-      disp.set_pixel(x, y, board[y * disp.width + x]);
+      disp.set_pixel(x, y, get_board_cell(x, y));
     }
   }
 
-  // Draw current piece
-  Tetromino& cur_piece = player_state.cur_piece;
-  for (int8_t i = 0; i < sizeof(cur_piece.points) / sizeof(*cur_piece.points); i++) {
-    int8_t px = cur_piece.points[i][0] + player_state.piece_x;
-    int8_t py = cur_piece.points[i][1] + player_state.piece_y;
-    disp.set_pixel(px, py, cur_piece.color);
+  // Draw current piece for each player
+  for (uint8_t player_index = 0; player_index < 2; player_index++) {
+    PlayerState& player_state = player_states[player_index];
+    uint8_t offset = player_index * 4;
+    uint8_t mask = 0xF << offset;
+
+    const Tetromino& cur_piece = player_state.cur_piece;
+    for (int8_t i = 0; i < sizeof(cur_piece.points) / sizeof(*cur_piece.points); i++) {
+      int8_t px = cur_piece.points[i][0] + player_state.piece_x;
+      int8_t py = cur_piece.points[i][1] + player_state.piece_y;
+      uint8_t pixel = disp.get_pixel(px, py);
+      pixel = (pixel & (~mask)) | ((cur_piece.color << offset) & mask);
+      disp.set_pixel(px, py, pixel);
+    }
   }
   
-  disp.refresh();
+  disp.refresh(true);
 }
 
 bool Sporktris::is_valid_position(uint8_t player_index, Tetromino piece, int8_t x, int8_t y) {
@@ -382,9 +389,30 @@ bool Sporktris::is_valid_position(uint8_t player_index, Tetromino piece, int8_t 
   for (int8_t i = 0; i < sizeof(piece.points) / sizeof(*piece.points); i++) {
     int8_t px = piece.points[i][0] + x;
     int8_t py = piece.points[i][1] + y;
-    if (py >= 0 && board[py * disp.width + px]) {
+    if (py >= 0 && get_board_cell(player_index, px, py)) {
       return false;
     }
   }
   return true;
+}
+
+uint8_t Sporktris::get_board_cell(uint8_t x, uint8_t y) {
+  return board[y * disp.width + x];
+}
+
+void Sporktris::set_board_cell(uint8_t x, uint8_t y, uint8_t value) {
+  board[y * disp.width + x] = value;
+}
+
+uint8_t Sporktris::get_board_cell(uint8_t player_index, uint8_t x, uint8_t y) {
+  uint8_t offset = player_index * 4;
+  uint8_t cell = get_board_cell(x, y);
+  return (cell & (0xF << offset)) >> offset;
+}
+
+void Sporktris::set_board_cell(uint8_t player_index, uint8_t x, uint8_t y, uint8_t value) {
+  uint8_t offset = player_index * 4;
+  uint8_t& cell = board[y * disp.width + x];
+  uint8_t mask = 0xF << offset;
+  cell = (cell & (~mask)) | ((value << offset) & mask);
 }

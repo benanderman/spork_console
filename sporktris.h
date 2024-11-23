@@ -59,6 +59,8 @@ class Sporktris: public InputProcessor {
 
   bool paused;
   
+  uint8_t get_board_cell(uint8_t x, uint8_t y);
+  void set_board_cell(uint8_t x, uint8_t y, uint8_t value);
   uint8_t get_board_cell(uint8_t player_index, uint8_t x, uint8_t y);
   void set_board_cell(uint8_t player_index, uint8_t x, uint8_t y, uint8_t value);
 
