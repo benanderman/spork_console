@@ -39,6 +39,7 @@ struct PlayerState {
   int8_t piece_x, piece_y;
   bool need_new_piece;
   bool clearing_lines;
+  uint8_t pending_garbage;
 
   bool alive;
   unsigned long last_cycle;
@@ -65,7 +66,9 @@ class Sporktris: public InputProcessor {
   void set_board_cell(uint8_t player_index, uint8_t x, uint8_t y, uint8_t value);
 
   bool handle_button_down(Controller::Button button, uint8_t controller_index);
-  void cycle(uint8_t player_index);
+  void add_garbage(uint8_t player_index, uint8_t count);
+  // Returns amount of garbage to send to other players.
+  uint8_t cycle(uint8_t player_index);
   void draw();
 
   bool is_valid_position(uint8_t player_index, Tetromino piece, int8_t x, int8_t y);

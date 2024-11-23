@@ -113,6 +113,7 @@ PlayerState::PlayerState() {
   piece_y = 0;
   need_new_piece = true;
   clearing_lines = false;
+  pending_garbage = 0;
 
   last_cycle = millis();
   cycle_length = 500;
@@ -198,7 +199,9 @@ bool Sporktris::play() {
       }
 
       if (now > player.last_cycle + player.cycle_length) {
-        cycle(p);
+        uint8_t send_garbage_count = cycle(p);
+        // If somehow there were > 2 players, this wouldn't work.
+        player_states[1 - p].pending_garbage += send_garbage_count;
         player.last_cycle = now;
         if (player.line_count / 10 + 1 > player.level) {
           player.level++;
@@ -276,10 +279,10 @@ bool Sporktris::handle_button_down(Controller::Button button, uint8_t controller
   }
 }
 
-void Sporktris::cycle(uint8_t player_index) {
+uint8_t Sporktris::cycle(uint8_t player_index) {
   PlayerState& player_state = player_states[player_index];
   if (!player_state.alive) {
-    return;
+    return 0;
   }
 
   // Move all the lines down to fill the cleared lines, instead of moving the piece
@@ -306,12 +309,20 @@ void Sporktris::cycle(uint8_t player_index) {
       }
     }
     player_state.clearing_lines = false;
-    return;
+    return 0;
+  }
+
+  // Add any pending garbage instead of moving piece down.
+  if (player_state.pending_garbage) {
+    add_garbage(player_index, player_state.pending_garbage);
+    player_state.pending_garbage = 0;
+    return 0;
   }
   
   Tetromino& cur_piece = player_state.cur_piece;
   if (is_valid_position(player_index, cur_piece, player_state.piece_x, player_state.piece_y + 1)) {
     player_state.piece_y++;
+    return 0;
   } else {
     // Apply piece to the board
     int8_t top = disp.height;
@@ -348,6 +359,43 @@ void Sporktris::cycle(uint8_t player_index) {
     player_state.alive = top >= 0;
     
     player_state.need_new_piece = true;
+    return max(0, lines_just_cleared - 1);
+  }
+}
+
+void Sporktris::add_garbage(uint8_t player_index, uint8_t count) {
+  PlayerState& player_state = player_states[player_index];
+
+  // Copy existing board up.
+  for (uint8_t y = 0; y < disp.height; y++) {
+    for (uint8_t x = 0; x < disp.width; x++) {
+      if (y + 1 <= count) {
+        if (get_board_cell(player_index, x, y)) {
+          player_state.alive = false;
+        }
+      } else {
+        uint8_t cell = get_board_cell(player_index, x, y);
+        set_board_cell(player_index, x, y - count, cell);
+      }
+    }
+  }
+
+  // Create garbage.
+  for (uint8_t y = disp.height - count; y < disp.height; y++) {
+    uint8_t x_count = disp.width / 2 + random(disp.width / 2 - 1);
+    // Place all garbage together on the left.
+    for (uint8_t x = 0; x < disp.width; x++) {
+      uint8_t cell = x < x_count ? random(PIECE_COUNT) + 1 : 0;
+      set_board_cell(player_index, x, y, cell);
+    }
+    // Shuffle the line.
+    for (uint8_t x = 0; x < disp.width - 1; x++) {
+      uint8_t swap_x = x + random(disp.width - x);
+      uint8_t x_cell = get_board_cell(player_index, x, y);
+      uint8_t swap_cell = get_board_cell(player_index, swap_x, y);
+      set_board_cell(player_index, x, y, swap_cell);
+      set_board_cell(player_index, swap_x, y, x_cell);
+    }
   }
 }
 
