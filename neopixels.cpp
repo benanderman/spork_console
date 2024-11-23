@@ -114,7 +114,7 @@ static inline void dualSendBit(bool bitVal, bool peripheralBitVal) {
         [peripheralPort] "I" (_SFR_IO_ADDR(PERIPHERAL_PIXEL_PORT)),
         [peripheralBit]  "I" (PERIPHERAL_PIXEL_BIT),
         [onCycles]       "I" (NS_TO_CYCLES(T0H) - 2),        // 1-bit width less overhead  for the actual bit setting, note that this delay could be longer and everything would still work
-        [extraOnCycles]  "I" (NS_TO_CYCLES(T1H - T0H) - 4),  // Cycles after turning the first pin off
+        [extraOnCycles]  "I" (NS_TO_CYCLES(T1H - T0H) - 2),  // Cycles after turning the first pin off
         [offCycles]      "I" (NS_TO_CYCLES(T0L) - 4)         // Minimum interbit delay. Note that we probably don't need this at all since the loop overhead will be enough, but here for correctness
       );
     }
@@ -140,7 +140,7 @@ static inline void dualSendBit(bool bitVal, bool peripheralBitVal) {
         [peripheralPort] "I" (_SFR_IO_ADDR(PERIPHERAL_PIXEL_PORT)),
         [peripheralBit]  "I" (PERIPHERAL_PIXEL_BIT),
         [onCycles]       "I" (NS_TO_CYCLES(T0H) - 2),        // 1-bit width less overhead  for the actual bit setting, note that this delay could be longer and everything would still work
-        [extraOnCycles]  "I" (NS_TO_CYCLES(T1H - T0H) - 4),  // Cycles after turning the first pin off
+        [extraOnCycles]  "I" (NS_TO_CYCLES(T1H - T0H) - 2),  // Cycles after turning the first pin off
         [offCycles]      "I" (NS_TO_CYCLES(T0L) - 4)         // Minimum interbit delay. Note that we probably don't need this at all since the loop overhead will be enough, but here for correctness
       );
     } else {
