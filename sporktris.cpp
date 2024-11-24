@@ -196,6 +196,12 @@ bool Sporktris::play() {
         player.piece_x = disp.width / 2 - rect.x - rect.center_x();
         player.piece_y = -rect.y2 - 1;
         player.need_new_piece = false;
+
+        // Add any pending garbage instead of moving piece down.
+        if (player.pending_garbage) {
+          add_garbage(p, player.pending_garbage);
+          player.pending_garbage = 0;
+        }
       }
 
       if (now > player.last_cycle + player.cycle_length) {
@@ -309,13 +315,6 @@ uint8_t Sporktris::cycle(uint8_t player_index) {
       }
     }
     player_state.clearing_lines = false;
-    return 0;
-  }
-
-  // Add any pending garbage instead of moving piece down.
-  if (player_state.pending_garbage) {
-    add_garbage(player_index, player_state.pending_garbage);
-    player_state.pending_garbage = 0;
     return 0;
   }
   
