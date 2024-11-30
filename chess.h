@@ -111,12 +111,12 @@ class Chess: public InputProcessor {
   Controller *controllers;
   int controller_count;
 
-  Chess(Display& disp, Controller *controllers, int controller_count);
+  Chess(Display& disp, Controller *controllers, uint8_t controller_count);
 
   bool play();
 
   private:
-  bool handle_button_down(Controller::Button button, int controller_index);
+  bool handle_button_down(Controller::Button button, uint8_t controller_index);
   
   Board board;
   bool selected = false;

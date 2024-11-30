@@ -180,7 +180,7 @@ void Board::draw(Display& disp) {
 }
 
 
-Chess::Chess(Display& disp, Controller *controllers, int controller_count):
+Chess::Chess(Display& disp, Controller *controllers, uint8_t controller_count):
   InputProcessor(controllers, controller_count), disp(disp) {
   button_conf[Controller::Button::b] = { .initial = 500, .subsequent = 500};
   button_conf[Controller::Button::a] = { .initial = 500, .subsequent = 500};
@@ -192,7 +192,7 @@ Chess::Chess(Display& disp, Controller *controllers, int controller_count):
   button_conf[Controller::Button::left] = { .initial = 200, .subsequent = 20};
 }
 
-bool Chess::handle_button_down(Controller::Button button, int controller_index){  
+bool Chess::handle_button_down(Controller::Button button, uint8_t controller_index) {
   switch (button) {
     case Controller::Button::start: {
       return true;

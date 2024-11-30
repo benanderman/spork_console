@@ -48,12 +48,12 @@ class DiceGame: public InputProcessor {
   Controller *controllers;
   int controller_count;
 
-  DiceGame(Display& disp, Controller *controllers, int controller_count);
+  DiceGame(Display& disp, Controller *controllers, uint8_t controller_count);
 
   bool play();
 
   private:
-  bool handle_button_down(Controller::Button button, int controller_index);
+  bool handle_button_down(Controller::Button button, uint8_t controller_index);
   bool paused;
 
   Obstacles obstacles;

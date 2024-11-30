@@ -69,7 +69,7 @@ bool DiceGame::play() {
   return false;
 }
 
-bool DiceGame::handle_button_down(Controller::Button button, int controller_index) {
+bool DiceGame::handle_button_down(Controller::Button button, uint8_t controller_index) {
   if (paused && button != Controller::Button::start && button != Controller::Button::select) {
     return false;
   }
@@ -232,7 +232,7 @@ void Projectiles::draw(Display& disp, Obstacles& obstacles){
   }
 }
 
-DiceGame::DiceGame(Display& disp, Controller *controllers, int controller_count):
+DiceGame::DiceGame(Display& disp, Controller *controllers, uint8_t controller_count):
   InputProcessor(controllers, controller_count), disp(disp) {
   button_conf[Controller::Button::b] = { .initial = 500, .subsequent = 500};
   button_conf[Controller::Button::a] = { .initial = 500, .subsequent = 500};
