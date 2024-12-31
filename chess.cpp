@@ -50,16 +50,16 @@ Board::Board() {
 }
 
 void Board::move(Position start, Position end) {
-  //turn = turn == Side::white ? Side::black : Side::white;
+  turn = turn == Side::white ? Side::black : Side::white;
   game_over = (piece(end).type() == PieceType::king);
   board[end.y()][end.x()] = piece(start);
   board[start.y()][start.x()] = Piece();
 }
 
 bool Board::line_is_empty(Position start, Position end) {
-  Position offset = Position(start.x() - end.x(), start.y() - end.y());
-  int increment_x = offset.x() == 0 ? 0 : (offset.x() < 0 ? -1 : 1);
-  int increment_y = offset.y() == 0 ? 0 : (offset.y() < 0 ? -1 : 1);
+  Position offset = Position(end.x() - start.x(), end.y() - start.y());
+  int8_t increment_x = offset.x() == 0 ? 0 : (offset.x() < 0 ? -1 : 1);
+  int8_t increment_y = offset.y() == 0 ? 0 : (offset.y() < 0 ? -1 : 1);
 
   Position current_pos = Position(start.x() + increment_x, start.y() + increment_y);
   while (current_pos != end) {
@@ -111,15 +111,20 @@ bool Board::valid_move(Position start, Position end) {
       }
       break;
     case PieceType::pawn: {
-      turn = turn == Side::white ? Side::black : Side::white;
-      int direction = start_piece.type() == Side::white ? -1 : 1;
-      int start_line = start_piece.type() == Side::white ? 6 : 1;
+      int8_t direction = start_piece.side() == Side::white ? -1 : 1;
+      int8_t start_line = start_piece.side() == Side::white ? 6 : 1;
       if (abs(offset.x()) == 1) {
-        if ((offset.y() == 1*direction) && (end_piece.type() != PieceType::none || end.x() == en_passant_column)) {
+        // TODO: This en_passant_column is clearly wrong, but it's not straightforward to get right
+        if ((offset.y() == 1*direction) && (end_piece.type() != PieceType::none || offset.x() == en_passant_column)) {
           return true;
         }
       } else if (offset.x() == 0) {
-        if (end_piece.type() == PieceType::none && (offset.y() == 1*direction || (offset.y() == 2*direction && line_is_empty(start, end)) ) ) {
+        bool square_is_empty = end_piece.type() == PieceType::none;
+        bool is_one_forward = offset.y() == direction;
+        bool is_two_forward = offset.y() == direction * 2;
+        bool is_on_start_line = start.y() == start_line;
+        bool can_move_two = is_on_start_line && line_is_empty(start, end);
+        if (square_is_empty && (is_one_forward || (is_two_forward && can_move_two))) {
           return true;
         }
       }
@@ -186,10 +191,10 @@ Chess::Chess(Display& disp, Controller *controllers, uint8_t controller_count):
   button_conf[Controller::Button::a] = { .initial = 500, .subsequent = 500};
   button_conf[Controller::Button::select] = { .initial = 0, .subsequent = 0};
   button_conf[Controller::Button::start] = { .initial = 0, .subsequent = 0};
-  button_conf[Controller::Button::down] = { .initial = 100, .subsequent = 50};
-  button_conf[Controller::Button::right] = { .initial = 200, .subsequent = 20};
-  button_conf[Controller::Button::up] = { .initial = 200, .subsequent = 200};
-  button_conf[Controller::Button::left] = { .initial = 200, .subsequent = 20};
+  button_conf[Controller::Button::down] = { .initial = 150, .subsequent = 50};
+  button_conf[Controller::Button::right] = { .initial = 150, .subsequent = 50};
+  button_conf[Controller::Button::up] = { .initial = 150, .subsequent = 50};
+  button_conf[Controller::Button::left] = { .initial = 150, .subsequent = 50};
 }
 
 bool Chess::handle_button_down(Controller::Button button, uint8_t controller_index) {

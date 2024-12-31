@@ -29,10 +29,10 @@ struct Position {
   int8_t y() {
     return y_;
   }
-  void set_x (int val) {
+  void set_x (int8_t val) {
     x_ = val;
   }
-  void set_y (int val) {
+  void set_y (int8_t val) {
     y_ = val;
   }
 
@@ -60,7 +60,7 @@ struct Piece {
   PieceType type() {
     return (PieceType)(data & 0xf);
   }
-  int color() {
+  uint8_t color() {
     return type();
   }
 
@@ -78,7 +78,7 @@ struct Board {
   Position origin = Position(1,6);
   Side turn = Side::white;
   bool game_over = false;
-  int en_passant_column = -1;
+  int8_t en_passant_column = -1;
   uint8_t castling_pieces_moves = 0; //bit vector
 
   int animation_time = 2000; //milliseconds
