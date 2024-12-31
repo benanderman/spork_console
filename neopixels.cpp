@@ -14,7 +14,7 @@
 #define T1H  900    // Width of a 1 bit in ns = 14.4 cycles
 #define T1L  600    // Width of a 1 bit in ns = 9.6 cycles
 
-#define T0H  400    // Width of a 0 bit in ns = 6.4 cycles
+#define T0H  330    // Width of a 0 bit in ns = 6.4 cycles
 #define T0L  900    // Width of a 0 bit in ns = 14.4 cycles
 
 #define RES 6000    // Width of the low gap between bits to cause a frame to latch = 96 cycles
