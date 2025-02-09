@@ -19,13 +19,13 @@
 
 #define RES 6000    // Width of the low gap between bits to cause a frame to latch = 96 cycles
 
-// Here are some convience defines for using nanoseconds specs to generate actual CPU delays
+// Here are some convenience defines for using nanoseconds specs to generate actual CPU delays.
 
 #define NS_PER_SEC (1000000000L)          // Note that this has to be SIGNED since we want to be able to check for negative values of derivatives
 
 #define CYCLES_PER_SEC (F_CPU)
 
-#define NS_PER_CYCLE ( NS_PER_SEC / CYCLES_PER_SEC ) // 62.5 at 16MHz
+#define NS_PER_CYCLE (NS_PER_SEC / CYCLES_PER_SEC) // 62.5 at 16MHz
 
 #define NS_TO_CYCLES(n) ( (n) / NS_PER_CYCLE )
 
@@ -184,7 +184,7 @@ static void Neopixels::ledSetup() {
 
 static void Neopixels::sendPixel(unsigned char r, unsigned char g, unsigned char b)  {
   cli();
-  sendByte(g, g); // Neopixel wants colors in green then red then blue order
+  sendByte(g, g); // Neopixel wants colors in green, red, blue order
   sendByte(r, r);
   sendByte(b, b);
   sei();

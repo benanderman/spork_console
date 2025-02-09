@@ -81,7 +81,7 @@
   #define PIXEL_BIT   4      // Bit of the pin the pixels are connected to
 #endif
 
-// Multi-console support
+// Multi-console support; these are specific to AT328P
 #define CONTROLLER_SHLD_IN_PIN   PIND
 #define CONTROLLER_SHLD_BIT      5
 #define CONTROLLER_CLK_IN_PIN    PIND
