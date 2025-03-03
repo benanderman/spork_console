@@ -234,12 +234,12 @@ void Projectiles::draw(Display& disp, Obstacles& obstacles){
 
 DiceGame::DiceGame(Display& disp, Controller *controllers, uint8_t controller_count):
   InputProcessor(controllers, controller_count), disp(disp) {
-  button_conf[Controller::Button::b] = { .initial = 500, .subsequent = 500};
-  button_conf[Controller::Button::a] = { .initial = 500, .subsequent = 500};
-  button_conf[Controller::Button::select] = { .initial = 0, .subsequent = 0};
-  button_conf[Controller::Button::start] = { .initial = 0, .subsequent = 0};
-  button_conf[Controller::Button::down] = { .initial = 100, .subsequent = 50};
-  button_conf[Controller::Button::right] = { .initial = 200, .subsequent = 20};
-  button_conf[Controller::Button::up] = { .initial = 200, .subsequent = 200};
-  button_conf[Controller::Button::left] = { .initial = 200, .subsequent = 20};
+  button_conf[Controller::Button::b]      = { .initial = 500, .subsequent = 500};
+  button_conf[Controller::Button::a]      = { .initial = 500, .subsequent = 500};
+  button_conf[Controller::Button::select] = { .initial = 0,   .subsequent = 0};
+  button_conf[Controller::Button::start]  = { .initial = 0,   .subsequent = 0};
+  button_conf[Controller::Button::down]   = { .initial = 100, .subsequent = 50};
+  button_conf[Controller::Button::right]  = { .initial = 200, .subsequent = 20};
+  button_conf[Controller::Button::up]     = { .initial = 200, .subsequent = 200};
+  button_conf[Controller::Button::left]   = { .initial = 200, .subsequent = 20};
 }

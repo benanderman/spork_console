@@ -140,8 +140,6 @@ MenuChoice Menu::choose(MenuChoice initial_option) {
   };
   disp.palette = palette;
 
-  get_pixel_func_t get_pixel_func = NULL;
-
   bool chosen = false;
   unsigned long last_change = millis();
   unsigned long last_brightness_change = millis();
@@ -162,12 +160,6 @@ MenuChoice Menu::choose(MenuChoice initial_option) {
         }
         if (controllers[c][Controller::Button::select]) {
           chosen = true;
-        }
-        if (controllers[c][Controller::Button::a]) {
-          get_pixel_func = &Graphics::rainbow_cycle;
-        }
-        if (controllers[c][Controller::Button::b]) {
-          get_pixel_func = NULL;
         }
       }
       if (!disp.neopixels && digitalRead(RIGHT_BUTTON_PIN)) {
@@ -222,7 +214,7 @@ MenuChoice Menu::choose(MenuChoice initial_option) {
       options[looped_i].draw(disp, 0, 10 * (i - option_index) + (disp.height / 4), i == option_index);
     }
     
-    disp.refresh(false, get_pixel_func);
+    disp.refresh(false, NULL);
     delay(4);
   }
 

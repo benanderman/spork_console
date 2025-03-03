@@ -187,14 +187,14 @@ void Board::draw(Display& disp) {
 
 Chess::Chess(Display& disp, Controller *controllers, uint8_t controller_count):
   InputProcessor(controllers, controller_count), disp(disp) {
-  button_conf[Controller::Button::b] = { .initial = 500, .subsequent = 500};
-  button_conf[Controller::Button::a] = { .initial = 500, .subsequent = 500};
-  button_conf[Controller::Button::select] = { .initial = 0, .subsequent = 0};
-  button_conf[Controller::Button::start] = { .initial = 0, .subsequent = 0};
-  button_conf[Controller::Button::down] = { .initial = 150, .subsequent = 50};
-  button_conf[Controller::Button::right] = { .initial = 150, .subsequent = 50};
-  button_conf[Controller::Button::up] = { .initial = 150, .subsequent = 50};
-  button_conf[Controller::Button::left] = { .initial = 150, .subsequent = 50};
+  button_conf[Controller::Button::b]      = { .initial = 500, .subsequent = 500};
+  button_conf[Controller::Button::a]      = { .initial = 500, .subsequent = 500};
+  button_conf[Controller::Button::select] = { .initial = 0,   .subsequent = 0};
+  button_conf[Controller::Button::start]  = { .initial = 0,   .subsequent = 0};
+  button_conf[Controller::Button::down]   = { .initial = 150, .subsequent = 50};
+  button_conf[Controller::Button::right]  = { .initial = 150, .subsequent = 50};
+  button_conf[Controller::Button::up]     = { .initial = 150, .subsequent = 50};
+  button_conf[Controller::Button::left]   = { .initial = 150, .subsequent = 50};
 }
 
 bool Chess::handle_button_down(Controller::Button button, uint8_t controller_index) {

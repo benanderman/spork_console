@@ -4,14 +4,14 @@
 Life::Life(Display& disp, Controller *controllers, uint8_t controller_count):
   InputProcessor(controllers, controller_count),
   disp(disp), paused(true), cursor_x(disp.width / 2), cursor_y(disp.height / 2) {
-  button_conf[Controller::Button::b] = { .initial = 0, .subsequent = 0};
-  button_conf[Controller::Button::a] = { .initial = 0, .subsequent = 0};
-  button_conf[Controller::Button::select] = { .initial = 0, .subsequent = 0};
-  button_conf[Controller::Button::start] = { .initial = 0, .subsequent = 0};
-  button_conf[Controller::Button::down] = { .initial = 200, .subsequent = 100};
-  button_conf[Controller::Button::right] = { .initial = 200, .subsequent = 100};
-  button_conf[Controller::Button::up] = { .initial = 200, .subsequent = 100};
-  button_conf[Controller::Button::left] = { .initial = 200, .subsequent = 100};
+  button_conf[Controller::Button::b]      = { .initial = 0,   .subsequent = 0};
+  button_conf[Controller::Button::a]      = { .initial = 0,   .subsequent = 0};
+  button_conf[Controller::Button::select] = { .initial = 0,   .subsequent = 0};
+  button_conf[Controller::Button::start]  = { .initial = 0,   .subsequent = 0};
+  button_conf[Controller::Button::down]   = { .initial = 200, .subsequent = 100};
+  button_conf[Controller::Button::right]  = { .initial = 200, .subsequent = 100};
+  button_conf[Controller::Button::up]     = { .initial = 200, .subsequent = 100};
+  button_conf[Controller::Button::left]   = { .initial = 200, .subsequent = 100};
 }
 
 bool Life::play() {
