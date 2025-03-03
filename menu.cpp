@@ -214,7 +214,7 @@ MenuChoice Menu::choose(MenuChoice initial_option) {
       options[looped_i].draw(disp, 0, 10 * (i - option_index) + (disp.height / 4), i == option_index);
     }
     
-    disp.refresh(false, NULL);
+    disp.refresh(false);
     delay(4);
   }
 

@@ -36,7 +36,7 @@ void Display::clear_all() {
   memset(&state, 0, MAX_DISPLAY_PIXELS);
 }
 
-void Display::refresh(bool multi_display, get_pixel_func_t get_pixel_func) {
+void Display::refresh(bool multi_display) {
   uint8_t total_pixels = width * height;
   uint8_t r_shift = 0;
   uint8_t l_shift = 0;
@@ -115,12 +115,6 @@ void Display::refresh(bool multi_display, get_pixel_func_t get_pixel_func) {
           uint8_t r = pixel[0];
           uint8_t g = pixel[1];
           uint8_t b = pixel[2];
-          if (get_pixel_func) {
-            uint32_t p = get_pixel_func(x, y);
-            r = (p >> 24) & 0xFF;
-            g = (p >> 16) & 0xFF;
-            b = (p >>  8) & 0xFF;
-          }
           Neopixels::sendPixel((r >> r_shift) << l_shift, (g >> r_shift) << l_shift, (b >> r_shift) << l_shift);
         }
       } else {

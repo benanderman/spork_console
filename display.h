@@ -4,8 +4,6 @@
 #include "config.h"
 #include "arduino.h"
 
-typedef uint32_t (*get_pixel_func_t)(uint8_t x, uint8_t y);
-
 class Display {
   public:
   enum Mode {
@@ -39,7 +37,7 @@ class Display {
   
   uint8_t get_pixel(int8_t x, int8_t y);
   void clear_all();
-  void refresh(bool multi_display = false, get_pixel_func_t get_pixel_func = NULL);
+  void refresh(bool multi_display = false);
   void set_brightness(uint8_t brightness);
   uint8_t get_brightness();
   
