@@ -7,19 +7,16 @@
 bool ObstacleGame::play() {
   randomSeed(millis());
   
-  uint8_t palette[][3] = {
-    {0, 0, 0},
-    {4, 16, 4},
-    {16, 4, 4},
-    {4, 4, 16},
-    {10, 10, 4},
-    {10, 4, 10},
-    {4, 10, 10},
-    {8, 8, 8},
-    {0, 24, 0},
-    {0, 0, 0}
-  };
-  disp.palette = palette;
+  disp.palette[0] = RGB(0,  0,  0);
+  disp.palette[1] = RGB(4,  16, 4);
+  disp.palette[2] = RGB(16, 4,  4);
+  disp.palette[3] = RGB(4,  4,  16);
+  disp.palette[4] = RGB(10, 10, 4);
+  disp.palette[5] = RGB(10, 4,  10);
+  disp.palette[6] = RGB(4,  10, 10);
+  disp.palette[7] = RGB(8,  8,  8);
+  disp.palette[8] = RGB(0,  24, 0);
+  disp.palette[9] = RGB(0,  0,  0);
   
   player_x = disp.width / 2 - ENTITY_SIZE / 2;
   player_y = disp.height - ENTITY_SIZE;
@@ -38,7 +35,6 @@ bool ObstacleGame::play() {
     if (now > last_move + move_speed) {
       bool exit_game = handle_input();
       if (exit_game) {
-        disp.palette = NULL;
         return true;
       }
       last_move = now;
@@ -64,7 +60,7 @@ bool ObstacleGame::play() {
     delay(1);
   }
 
-  return Graphics::end_game(disp, &controller, 1, 8, palette, 9);
+  return Graphics::end_game(disp, &controller, 1, 8, 9);
 }
 
 bool ObstacleGame::handle_input() {

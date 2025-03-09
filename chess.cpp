@@ -4,18 +4,15 @@
 
 
 bool Chess::play() {
-  byte palette[][3] = {
-    {0, 0, 0},
-    {15, 4, 4},
-    {24, 10, 0},
-    {0, 24, 0},
-    {0, 0, 24},
-    {24, 24, 24},
-    {24, 0, 24},
-    {16, 16, 0},
-    {0, 0, 0},
-  };
-  disp.palette = palette;
+  disp.palette[0] = RGB(0,  0,  0);
+  disp.palette[1] = RGB(15, 4,  4);
+  disp.palette[2] = RGB(24, 10, 0);
+  disp.palette[3] = RGB(0,  24, 0);
+  disp.palette[4] = RGB(0,  0,  24);
+  disp.palette[5] = RGB(24, 24, 24);
+  disp.palette[6] = RGB(24, 0,  24);
+  disp.palette[7] = RGB(16, 16, 0);
+  disp.palette[8] = RGB(0,  0,  0);
 
   while(!board.game_over) {
     unsigned long now = millis();
@@ -23,7 +20,6 @@ bool Chess::play() {
     bool should_exit = handle_input(now);
     if (should_exit) {
       Graphics::clear_rows(disp);
-      disp.palette = NULL;
       return true;
     }
     disp.clear_all();
@@ -33,7 +29,7 @@ bool Chess::play() {
     delay(1);
   }
 
-  return Graphics::end_game(disp, controllers, controller_count, 4, palette, 8);
+  return Graphics::end_game(disp, controllers, controller_count, 4, 8);
 }
 
 Board::Board() {

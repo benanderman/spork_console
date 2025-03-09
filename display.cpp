@@ -90,36 +90,24 @@ void Display::refresh(bool multi_display) {
     uint8_t val = get_pixel(x, y);
 
     if (neopixels) {
-      if (palette) {
-        if (multi_display) {
-          // In multi-display mode, the host display's pixel is in the low 4 bits, and
-          // the peripheral display's pixel is in the high 4 bits.
-          uint8_t *pixel1 = palette[val & 0xF];
-          uint8_t *pixel2 = palette[val >> 4];
-          // WS2812-compatible LEDs expect colors in GRB order. We use the sendByte function
-          // here instead of sendPixel, to have less time between bits sent; if it's too long
-          // (5 microseconds), the screen will refresh.
-          cli();
-          uint8_t g1 = pixel1[1];
-          uint8_t g2 = pixel2[1];
-          Neopixels::sendByte((g1 >> r_shift) << l_shift, (g2 >> r_shift) << l_shift);
-          uint8_t r1 = pixel1[0];
-          uint8_t r2 = pixel2[0];
-          Neopixels::sendByte((r1 >> r_shift) << l_shift, (r2 >> r_shift) << l_shift);
-          uint8_t b1 = pixel1[2];
-          uint8_t b2 = pixel2[2];
-          Neopixels::sendByte((b1 >> r_shift) << l_shift, (b2 >> r_shift) << l_shift);
-          sei();
-        } else {
-          uint8_t *pixel = palette[val];
-          uint8_t r = pixel[0];
-          uint8_t g = pixel[1];
-          uint8_t b = pixel[2];
-          Neopixels::sendPixel((r >> r_shift) << l_shift, (g >> r_shift) << l_shift, (b >> r_shift) << l_shift);
-        }
+      if (multi_display) {
+        // In multi-display mode, the host display's pixel is in the low 4 bits, and
+        // the peripheral display's pixel is in the high 4 bits.
+        RGB pixel1 = palette[val & 0xF];
+        RGB pixel2 = palette[val >> 4];
+        // WS2812-compatible LEDs expect colors in GRB order. We use the sendByte function
+        // here instead of sendPixel, to have less time between bits sent; if it's too long
+        // (5 microseconds), the screen will refresh.
+        cli();
+        Neopixels::sendByte((pixel1.g >> r_shift) << l_shift, (pixel2.g >> r_shift) << l_shift);
+        Neopixels::sendByte((pixel1.r >> r_shift) << l_shift, (pixel2.r >> r_shift) << l_shift);
+        Neopixels::sendByte((pixel1.b >> r_shift) << l_shift, (pixel2.b >> r_shift) << l_shift);
+        sei();
       } else {
-        uint8_t pixel_brightness = (val ? brightness : 0);
-        Neopixels::sendPixel(pixel_brightness, pixel_brightness, pixel_brightness);
+        RGB pixel = palette[val];
+        Neopixels::sendPixel((pixel.r >> r_shift) << l_shift,
+                             (pixel.g >> r_shift) << l_shift,
+                             (pixel.b >> r_shift) << l_shift);
       }
     } else {
       digitalWrite(SER_PIN, val);

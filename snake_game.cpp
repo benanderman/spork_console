@@ -128,15 +128,11 @@ Player *players[2];
 bool SnakeGame::play() {
   randomSeed(analogRead(A0));
 
-  byte palette[][3] = {
-    {0, 0, 0},
-    {4, 16, 4},  // Player 1
-    {4, 4, 16},  // Player 2
-    {16, 4, 4},  // Food
-    {4, 12, 12}, // Tie winner
-    {0, 0, 0},   // Swap color for Graphics::end_game
-  };
-  disp.palette = palette;
+  disp.palette[0] = RGB(0,  0,  0);
+  disp.palette[1] = RGB(4,  16, 4);   // Player 1
+  disp.palette[2] = RGB(4,  4,  16);  // Player 2
+  disp.palette[3] = RGB(16, 4,  4);   // Food
+  disp.palette[4] = RGB(4,  12, 12);  // Tie winner
   
   byte start_len = 3;
   Player player1(disp.width / 2 - 1, 0, start_len, Dir::down, disp, 1);
@@ -167,7 +163,6 @@ bool SnakeGame::play() {
     if (now > last_input + input_speed) {
       bool exit_game = handle_input();
       if (exit_game) {
-        disp.palette = NULL;
         return true;
       }
       last_input = now;
@@ -208,7 +203,7 @@ bool SnakeGame::play() {
 
   // If the winner is -1, that means it was a tie.
   uint8_t winner_color = winner == -1 ? 4 : players[winner]->color;
-  return Graphics::end_game(disp, controllers, controller_count, winner_color, palette, 5);
+  return Graphics::end_game(disp, controllers, controller_count, winner_color, 5);
 }
 
 bool SnakeGame::handle_input() {

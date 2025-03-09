@@ -11,7 +11,7 @@ void Graphics::clear_rows(Display& disp) {
   }
 }
 
-void Graphics::animate_color_rows(Display& disp, byte exclude_value, byte value) {
+void Graphics::animate_color_rows(Display& disp, uint8_t exclude_value, uint8_t value) {
   for (int y = 0; y < disp.height; y++) {
     for (int x = 0; x < disp.width; x++) {
       if (disp.get_pixel(x, y) != exclude_value) {
@@ -23,23 +23,23 @@ void Graphics::animate_color_rows(Display& disp, byte exclude_value, byte value)
   }
 }
 
-void Graphics::explode_pixels(Display& disp, byte (*palette)[3], byte swap_index, byte max_value) {
+void Graphics::explode_pixels(Display& disp, uint8_t swap_index, uint8_t max_value) {
   for (int y = 0; y < disp.height; y++) {
     for (int x = 0; x < disp.width; x++) {
-      byte pixel = disp.get_pixel(x, y);
+      uint8_t pixel = disp.get_pixel(x, y);
       if (pixel == 0) {
         continue;
       }
-      memcpy(palette[swap_index], palette[disp.get_pixel(x, y)], 3);
+      disp.palette[swap_index] = disp.palette[pixel];
       disp.set_pixel(x, y, swap_index);
     }
     
-    while (palette[swap_index][0] < max_value &&
-           palette[swap_index][1] < max_value &&
-           palette[swap_index][2] < max_value) {
-      palette[swap_index][0] = min(max_value, (uint8_t)((palette[swap_index][0] + 1) * 1.2));
-      palette[swap_index][1] = min(max_value, (uint8_t)((palette[swap_index][1] + 1) * 1.2));
-      palette[swap_index][2] = min(max_value, (uint8_t)((palette[swap_index][2] + 1) * 1.2));
+    while (disp.palette[swap_index].r < max_value &&
+           disp.palette[swap_index].g < max_value &&
+           disp.palette[swap_index].b < max_value) {
+      disp.palette[swap_index].r = min(max_value, (uint8_t)((disp.palette[swap_index].r + 1) * 1.2));
+      disp.palette[swap_index].g = min(max_value, (uint8_t)((disp.palette[swap_index].g + 1) * 1.2));
+      disp.palette[swap_index].b = min(max_value, (uint8_t)((disp.palette[swap_index].b + 1) * 1.2));
       disp.refresh();
       delayMicroseconds(300);
     }
@@ -50,7 +50,7 @@ void Graphics::explode_pixels(Display& disp, byte (*palette)[3], byte swap_index
   }
 }
 
-bool Graphics::end_game(Display& disp, Controller *controllers, int controller_count, byte color, byte (*palette)[3], byte swap_index) {
+bool Graphics::end_game(Display& disp, Controller *controllers, int controller_count, uint8_t color, uint8_t swap_index) {
   if (disp.neopixels) {
     animate_color_rows(disp, 0, color);
   }
@@ -73,8 +73,7 @@ bool Graphics::end_game(Display& disp, Controller *controllers, int controller_c
     delay(1);
   }
   
-  Graphics::explode_pixels(disp, palette, swap_index, 128);
-  disp.palette = NULL;
+  Graphics::explode_pixels(disp, swap_index, 128);
   
   return should_exit;
 }

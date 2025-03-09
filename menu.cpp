@@ -127,18 +127,15 @@ MenuChoice Menu::choose(MenuChoice initial_option) {
     }
   }
 
-  byte palette[][3] = {
-    {0, 0, 0},
-    {8, 8, 8},
-    {1, 1, 1},
-    {0, 0, 24},
-    {0, 24, 0},
-    {24, 0, 0},
-    {8, 16, 0},
-    {12, 0, 12},
-    {0, 24, 0}
-  };
-  disp.palette = palette;
+  disp.palette[0] = RGB();
+  disp.palette[1] = RGB(8,  8,  8);
+  disp.palette[2] = RGB(1,  1,  1);
+  disp.palette[3] = RGB(0,  0,  24);
+  disp.palette[4] = RGB(0,  24, 0);
+  disp.palette[5] = RGB(24, 0,  0);
+  disp.palette[6] = RGB(8,  16, 0);
+  disp.palette[7] = RGB(12, 0,  12);
+  disp.palette[8] = RGB(0,  24, 0);
 
   bool chosen = false;
   unsigned long last_change = millis();
@@ -220,7 +217,6 @@ MenuChoice Menu::choose(MenuChoice initial_option) {
 
   // Animate clearing the display, to avoid a power surge
   Graphics::clear_rows(disp);
-  disp.palette = NULL;
   
   return options[option_index].choice;
 }

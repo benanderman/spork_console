@@ -3,18 +3,15 @@
 #include "graphics.h"
 
 bool DiceGame::play() {
-  byte palette[][3] = {
-    {0, 0, 0},
-    {24, 0, 0},
-    {24, 6, 0},
-    {12, 12, 0},
-    {0, 20, 0},
-    {4, 4, 24},
-    {12, 0, 12},
-    {24, 0, 0},
-    {0, 0, 0},
-  };
-  disp.palette = palette;
+  disp.palette[0] = RGB(0,  0,  0);
+  disp.palette[1] = RGB(24, 0,  0);
+  disp.palette[2] = RGB(24, 6,  0);
+  disp.palette[3] = RGB(12, 12, 0);
+  disp.palette[4] = RGB(0,  20, 0);
+  disp.palette[5] = RGB(4,  4,  24);
+  disp.palette[6] = RGB(12, 0,  12);
+  disp.palette[7] = RGB(24, 0,  0);
+  disp.palette[8] = RGB(0,  0,  0);
   
   player.x = 2;
   player.y = disp.height-2;
@@ -34,7 +31,6 @@ bool DiceGame::play() {
     bool should_exit = handle_input(now);
     if (should_exit) {
       Graphics::clear_rows(disp);
-      disp.palette = NULL;
       return true;
     }
     

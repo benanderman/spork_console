@@ -15,18 +15,15 @@ Life::Life(Display& disp, Controller *controllers, uint8_t controller_count):
 }
 
 bool Life::play() {
-  byte palette[][3] = {
-    {0, 0, 0},  // still dead
-    {1, 1, 1}, // newly dead
-    {8, 8, 8}, // newly alive
-    {6, 6, 6}, // still alive
-    // With cursor
-    {0, 0, 20},  // still dead
-    {1, 1, 20}, // newly dead
-    {4, 4, 20}, // newly alive
-    {2, 2, 18}, // still alive
-  };
-  disp.palette = palette;
+  disp.palette[0] = RGB(0, 0, 0);  // still dead
+  disp.palette[1] = RGB(1, 1, 1);  // newly dead
+  disp.palette[2] = RGB(8, 8, 8);  // newly alive
+  disp.palette[3] = RGB(6, 6, 6);  // still alive
+  // With cursor
+  disp.palette[4] = RGB(0, 0, 20);  // still dead
+  disp.palette[5] = RGB(1, 1, 20);  // newly dead
+  disp.palette[6] = RGB(4, 4, 20);  // newly alive
+  disp.palette[7] = RGB(2, 2, 18);  // still alive
 
   move_cursor(cursor_x, cursor_y, 0);
 
@@ -52,7 +49,6 @@ bool Life::play() {
     delay(1);
   }
 
-  disp.palette = NULL;
   return true;
 }
 

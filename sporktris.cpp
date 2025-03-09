@@ -154,19 +154,17 @@ Sporktris::Sporktris(Display& disp, Controller *controllers, uint8_t controller_
 bool Sporktris::play() {
   randomSeed(analogRead(A0));
   random(7);
-  uint8_t palette[][3] = {
-    {0, 0, 0},
-    {16, 4, 4},
-    {4, 16, 4},
-    {4, 4, 16},
-    {10, 10, 4},
-    {10, 4, 10},
-    {4, 10, 10},
-    {8, 8, 8},
-    {24, 0, 0},
-    {0, 0, 0}
-  };
-  disp.palette = palette;
+
+  disp.palette[0] = RGB(0,  0,  0);
+  disp.palette[1] = RGB(16, 4,  4);
+  disp.palette[2] = RGB(4,  16, 4);
+  disp.palette[3] = RGB(4,  4,  16);
+  disp.palette[4] = RGB(10, 10, 4);
+  disp.palette[5] = RGB(10, 4,  10);
+  disp.palette[6] = RGB(4,  10, 10);
+  disp.palette[7] = RGB(8,  8,  8);
+  disp.palette[8] = RGB(24, 0,  0);
+  disp.palette[9] = RGB(0,  0,  0);
 
   player_states[0].alive = controllers[0].is_connected();
   player_states[1].alive = controller_count > 1 && controllers[1].is_connected();
@@ -180,7 +178,6 @@ bool Sporktris::play() {
     bool should_exit = handle_input(now);
     if (should_exit) {
       Graphics::clear_rows(disp);
-      disp.palette = NULL;
       return true;
     }
 
@@ -219,7 +216,7 @@ bool Sporktris::play() {
     draw();
   }
 
-  return Graphics::end_game(disp, controllers, controller_count, 8, palette, 9);
+  return Graphics::end_game(disp, controllers, controller_count, 8, 9);
 }
 
 bool Sporktris::handle_button_down(Controller::Button button, uint8_t controller_index) {
