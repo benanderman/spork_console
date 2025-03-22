@@ -5,6 +5,7 @@
 #include "controller.h"
 #include "input_processor.h"
 #include "display.h"
+#include "menu.h"
 
 enum PieceType {
   none = 0,
@@ -112,6 +113,10 @@ class Chess: public InputProcessor {
   int controller_count;
 
   Chess(Display& disp, Controller *controllers, uint8_t controller_count);
+
+  static MenuOption menuOption();
+  static void setPalette(Display& disp);
+  static bool run(Display& disp, Controller *controllers, uint8_t controller_count);
 
   bool play();
 

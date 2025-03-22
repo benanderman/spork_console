@@ -1,12 +1,31 @@
 #include "arduino.h"
 #include "obstacle_game.h"
 #include "graphics.h"
+#include "config.h"
 
 #define ENTITY_SIZE 2
 
-bool ObstacleGame::play() {
-  randomSeed(millis());
-  
+static bool ObstacleGame::run(Display& disp, Controller *controllers, uint8_t controller_count) {
+  ObstacleGame game = ObstacleGame(disp, controllers, controller_count);
+  return game.play();
+}
+
+static MenuOption ObstacleGame::menuOption() {
+  static const char PROGMEM graphic[] =
+    "__________"
+    "_22_______"
+    "_22_______"
+    "__________"
+    "______22__"
+    "______22__"
+    "__________"
+    "__22______"
+    "__22_11___"
+    "_____11___";
+  return MenuOption(graphic, ObstacleGame::setPalette, ObstacleGame::run);
+}
+
+static void ObstacleGame::setPalette(Display &disp) {
   disp.palette[0] = RGB(0,  0,  0);
   disp.palette[1] = RGB(4,  16, 4);
   disp.palette[2] = RGB(16, 4,  4);
@@ -17,6 +36,12 @@ bool ObstacleGame::play() {
   disp.palette[7] = RGB(8,  8,  8);
   disp.palette[8] = RGB(0,  24, 0);
   disp.palette[9] = RGB(0,  0,  0);
+}
+
+bool ObstacleGame::play() {
+  ObstacleGame::setPalette(disp);
+
+  randomSeed(millis());
   
   player_x = disp.width / 2 - ENTITY_SIZE / 2;
   player_y = disp.height - ENTITY_SIZE;
@@ -60,23 +85,28 @@ bool ObstacleGame::play() {
     delay(1);
   }
 
-  return Graphics::end_game(disp, &controller, 1, 8, 9);
+  return Graphics::end_game(disp, controllers, controller_count, 8, 9);
 }
 
 bool ObstacleGame::handle_input() {
-  bool left = !disp.neopixels && digitalRead(LEFT_BUTTON_PIN);
-  bool right = !disp.neopixels && digitalRead(RIGHT_BUTTON_PIN);
+  bool left = LEFT_RIGHT_BUTTONS_ENABLED && digitalRead(CONSOLE_LEFT_BUTTON_PIN);
+  bool right = LEFT_RIGHT_BUTTONS_ENABLED && digitalRead(CONSOLE_LEFT_BUTTON_PIN);
   bool up = false;
   bool down = false;
+  bool start = false;
 
-  if (controller.is_connected()) {
-    Controller::update_state(&controller, 1);
-    left = left || controller[Controller::Button::left];
-    right = right || controller[Controller::Button::right];
-    up = controller[Controller::Button::up];
-    down = controller[Controller::Button::down];
+  for (int i = 0; i < controller_count; i++) {
+    Controller& controller = controllers[i];
+    if (controller.is_connected()) {
+      Controller::update_state(&controller, 1);
+      left = left || controller[Controller::Button::left];
+      right = right || controller[Controller::Button::right];
+      up = up || controller[Controller::Button::up];
+      down = down || controller[Controller::Button::down];
+      start = start || controller[Controller::Button::start];
+    }
   }
-  
+
   player_x += left ? -1 : 0;
   player_x += right ? 1 : 0;
   player_x = max(0, min(disp.width - ENTITY_SIZE, player_x));
@@ -85,7 +115,7 @@ bool ObstacleGame::handle_input() {
   player_y += down ? 1 : 0;
   player_y = max(0, min(disp.height - ENTITY_SIZE, player_y));
 
-  return controller[Controller::Button::start];
+  return start;
 }
 
 void ObstacleGame::draw_obstacles(long cycle, int level) {

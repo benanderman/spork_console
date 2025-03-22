@@ -2,16 +2,40 @@
 #include "config.h"
 #include "graphics.h"
 
-bool DiceGame::play() {
+static bool DiceGame::run(Display& disp, Controller *controllers, uint8_t controller_count) {
+  DiceGame game = DiceGame(disp, controllers, controller_count);
+  return game.play();
+}
+
+static MenuOption DiceGame::menuOption() {
+  static const char PROGMEM graphic[] =
+    "2211447733"
+    "2211447733"
+    "33__551144"
+    "33__551144"
+    "____66__55"
+    "__1166__55"
+    "__11______"
+    "__________"
+    "____11____"
+    "____11____";
+  return MenuOption(graphic, DiceGame::setPalette, DiceGame::run);
+}
+
+static void DiceGame::setPalette(Display &disp) {
   disp.palette[0] = RGB(0,  0,  0);
   disp.palette[1] = RGB(24, 0,  0);
-  disp.palette[2] = RGB(24, 6,  0);
+  disp.palette[2] = RGB(18, 6,  0);
   disp.palette[3] = RGB(12, 12, 0);
-  disp.palette[4] = RGB(0,  20, 0);
-  disp.palette[5] = RGB(4,  4,  24);
+  disp.palette[4] = RGB(4,  16, 4);
+  disp.palette[5] = RGB(4,  4,  16);
   disp.palette[6] = RGB(12, 0,  12);
-  disp.palette[7] = RGB(24, 0,  0);
+  disp.palette[7] = RGB(16, 4,  4);
   disp.palette[8] = RGB(0,  0,  0);
+}
+
+bool DiceGame::play() {
+  DiceGame::setPalette(disp);
   
   player.x = 2;
   player.y = disp.height-2;

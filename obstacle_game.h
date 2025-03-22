@@ -3,17 +3,20 @@
 
 #include "display.h"
 #include "controller.h"
+#include "menu.h"
 
 class ObstacleGame {
   public:
   Display& disp;
-  Controller controller;
-  uint8_t LEFT_BUTTON_PIN;
-  uint8_t RIGHT_BUTTON_PIN;
+  Controller *controllers;
+  int controller_count;
 
-  ObstacleGame(Display& disp, uint8_t left_button_pin, uint8_t right_button_pin, Controller controller):
-    disp(disp), controller(controller), LEFT_BUTTON_PIN(left_button_pin),
-    RIGHT_BUTTON_PIN(right_button_pin) {}
+  ObstacleGame(Display& disp, Controller *controllers, int controller_count):
+    disp(disp), controllers(controllers), controller_count(controller_count) {}
+
+  static MenuOption menuOption();
+  static void setPalette(Display& disp);
+  static bool run(Display& disp, Controller *controllers, uint8_t controller_count);
 
   bool play();
 

@@ -4,30 +4,38 @@
 #include "display.h"
 #include "controller.h"
 
-enum MenuChoice {
-  snake = 0,
-  obstacle,
-  sporktris,
-  life,
-  dice,
-  chess,
-  peripheral
+class MenuOption {
+  public:
+  MenuOption(const char *graphic, void (*setPaletteFunction)(Display& disp),
+    bool (*runFunction)(Display& disp, Controller *controllers, uint8_t controller_count)):
+    graphic(graphic), setPaletteFunction(setPaletteFunction), runFunction(runFunction) {}
+
+  void setPalette(Display& disp);
+  void draw(Display& disp, int8_t origin_x, int8_t origin_y, int8_t override_color);
+  // Returns whether it should be run again.
+  bool run(Display& disp, Controller *controllers, uint8_t controller_count);
+
+  private:
+  void (*setPaletteFunction)(Display& disp);
+  bool (*runFunction)(Display& disp, Controller *controllers, uint8_t controller_count);
+  // 10x10 graphic stored in PROGMEM.
+  const char *graphic;
 };
 
 class Menu {
   public:
   Display& disp;
   Controller *controllers;
-  int controller_count;
-  int LEFT_BUTTON_PIN;
-  int RIGHT_BUTTON_PIN;
+  uint8_t controller_count;
+  MenuOption *options;
+  uint8_t option_count;
 
-  Menu(Display& disp, Controller *controllers, int controller_count, int left_button_pin, int right_button_pin):
+  Menu(Display& disp, Controller *controllers, uint8_t controller_count, MenuOption *options, uint8_t option_count):
     disp(disp), controllers(controllers), controller_count(controller_count),
-    LEFT_BUTTON_PIN(left_button_pin), RIGHT_BUTTON_PIN(right_button_pin),
-    option_index(0) {}
+    options(options), option_count(option_count), option_index(0) {}
   
-  MenuChoice choose(MenuChoice initial_option = MenuChoice::snake);
+  uint8_t choose(uint8_t initial_option = 0);
+  void run();
 
   private:
   int option_index;

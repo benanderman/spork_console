@@ -4,6 +4,7 @@
 #include "display.h"
 #include "controller.h"
 #include "input_processor.h"
+#include "menu.h"
 
 #define PIECE_COUNT 7
 
@@ -51,6 +52,10 @@ class Sporktris: public InputProcessor {
   Display& disp;
 
   Sporktris(Display& disp, Controller *controllers, uint8_t controller_count);
+
+  static MenuOption menuOption();
+  static void setPalette(Display& disp);
+  static bool run(Display& disp, Controller *controllers, uint8_t controller_count);
 
   bool play();
 

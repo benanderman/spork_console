@@ -87,11 +87,6 @@ void setup_neopixels() {
   Neopixels::ledSetup();
 }
 
-MenuChoice choose_game(Display& disp, MenuChoice initial_option) {
-  Menu menu(disp, controllers, controller_count, CONSOLE_LEFT_BUTTON_PIN, CONSOLE_RIGHT_BUTTON_PIN);
-  return menu.choose(initial_option);
-}
-
 void loop() {
   bool use_neopixels = neopixels_connected();
 
@@ -105,58 +100,15 @@ void loop() {
   
   disp.set_brightness(DISPLAY_INITIAL_BRIGHTNESS);
 
-  MenuChoice choice = MenuChoice::snake;
-  while (true) {
-    choice = choose_game(disp, choice);
-    switch (choice) {
-      case MenuChoice::snake: {
-        bool quit = false;
-        while(!quit) {
-          SnakeGame snake_game(disp, controllers, controller_count);
-          quit = snake_game.play();
-        }
-        break;
-      }
-      case MenuChoice::obstacle: {
-        bool quit = false;
-        while(!quit) {
-          ObstacleGame obstacle_game(disp, CONSOLE_LEFT_BUTTON_PIN, CONSOLE_RIGHT_BUTTON_PIN, controllers[0]);
-          quit = obstacle_game.play();
-        }
-        break;
-      }
-      case MenuChoice::dice: {
-        bool quit = false;
-        while(!quit) {
-          DiceGame dice_game(disp, controllers, controller_count);
-          quit = dice_game.play();
-        }
-        break;
-      }
-      case MenuChoice::sporktris: {
-        bool quit = false;
-        while(!quit) {
-          Sporktris sporktris(disp, controllers, controller_count);
-          quit = sporktris.play();
-        }
-        break;
-      }
-      case MenuChoice::life: {
-        bool quit = false;
-        while(!quit) {
-          Life life(disp, controllers, controller_count);
-          quit = life.play();
-        }
-        break;
-      }
-      case MenuChoice::chess: {
-        bool quit = false;
-        while(!quit) {
-          Chess chess(disp, controllers, controller_count);
-          quit = chess.play();
-        }
-        break;
-      }
-    }
-  }
+  MenuOption menuOptions[] = {
+    SnakeGame::menuOption(),
+    ObstacleGame::menuOption(),
+    Sporktris::menuOption(),
+    Life::menuOption(),
+    DiceGame::menuOption(),
+    Chess::menuOption(),
+  };
+
+  Menu menu(disp, controllers, controller_count, menuOptions, sizeof(menuOptions) / sizeof(*menuOptions));
+  menu.run();
 }

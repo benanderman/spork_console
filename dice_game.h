@@ -5,6 +5,7 @@
 #include "controller.h"
 #include "input_processor.h"
 #include "graphics.h"
+#include "menu.h"
 
 struct Obstacles {
   int rows[10][5]; 
@@ -49,6 +50,10 @@ class DiceGame: public InputProcessor {
   int controller_count;
 
   DiceGame(Display& disp, Controller *controllers, uint8_t controller_count);
+
+  static MenuOption menuOption();
+  static void setPalette(Display& disp);
+  static bool run(Display& disp, Controller *controllers, uint8_t controller_count);
 
   bool play();
 

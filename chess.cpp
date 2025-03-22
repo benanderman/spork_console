@@ -2,17 +2,40 @@
 #include "config.h"
 #include "graphics.h"
 
+static bool Chess::run(Display& disp, Controller *controllers, uint8_t controller_count) {
+  Chess game = Chess(disp, controllers, controller_count);
+  return game.play();
+}
+
+static MenuOption Chess::menuOption() {
+  static const char PROGMEM graphic[] =
+    "__________"
+    "_4_356324_"
+    "_1111_111_"
+    "___2______"
+    "__3__1____"
+    "_____1____"
+    "______2___"
+    "_1111_111_"
+    "_42356__4_"
+    "__________";
+  return MenuOption(graphic, Chess::setPalette, Chess::run);
+}
+
+static void Chess::setPalette(Display &disp) {
+  disp.palette[0] = RGB(0,  0,  0);
+  disp.palette[1] = RGB(12, 6,  6);
+  disp.palette[2] = RGB(16, 8,  0);
+  disp.palette[3] = RGB(2,  20, 2);
+  disp.palette[4] = RGB(2,  2,  20);
+  disp.palette[5] = RGB(8,  8,  8);
+  disp.palette[6] = RGB(12, 0,  12);
+  disp.palette[7] = RGB(12, 12, 0);
+  disp.palette[8] = RGB(0,  0,  0);
+}
 
 bool Chess::play() {
-  disp.palette[0] = RGB(0,  0,  0);
-  disp.palette[1] = RGB(15, 4,  4);
-  disp.palette[2] = RGB(24, 10, 0);
-  disp.palette[3] = RGB(0,  24, 0);
-  disp.palette[4] = RGB(0,  0,  24);
-  disp.palette[5] = RGB(24, 24, 24);
-  disp.palette[6] = RGB(24, 0,  24);
-  disp.palette[7] = RGB(16, 16, 0);
-  disp.palette[8] = RGB(0,  0,  0);
+  Chess::setPalette(disp);
 
   while(!board.game_over) {
     unsigned long now = millis();

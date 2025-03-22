@@ -5,8 +5,25 @@
 #include "graphics.h"
 #include "pitches.h"
 
-// Minimum milliseconds between button state changes
-#define BUTTON_DEBOUNCE_THRESHOLD 20
+static bool Sporktris::run(Display& disp, Controller *controllers, uint8_t controller_count) {
+  Sporktris game = Sporktris(disp, controllers, controller_count);
+  return game.play();
+}
+
+static MenuOption Sporktris::menuOption() {
+  static const char PROGMEM graphic[] =
+    "__________"
+    "__________"
+    "__________"
+    "__22______"
+    "__2_______"
+    "__2_______"
+    "________44"
+    "7____3__44"
+    "77_2_33555"
+    "75_22235_1";
+  return MenuOption(graphic, Sporktris::setPalette, Sporktris::run);
+}
 
 Tetromino Tetromino::piece_of_type(uint8_t type) {
   switch (type) {
@@ -151,10 +168,7 @@ Sporktris::Sporktris(Display& disp, Controller *controllers, uint8_t controller_
   button_conf[Controller::Button::left]   = { .initial = 200, .subsequent = 20};
 }
 
-bool Sporktris::play() {
-  randomSeed(analogRead(A0));
-  random(7);
-
+static void Sporktris::setPalette(Display& disp) {
   disp.palette[0] = RGB(0,  0,  0);
   disp.palette[1] = RGB(16, 4,  4);
   disp.palette[2] = RGB(4,  16, 4);
@@ -164,7 +178,13 @@ bool Sporktris::play() {
   disp.palette[6] = RGB(4,  10, 10);
   disp.palette[7] = RGB(8,  8,  8);
   disp.palette[8] = RGB(24, 0,  0);
-  disp.palette[9] = RGB(0,  0,  0);
+}
+
+bool Sporktris::play() {
+  randomSeed(analogRead(A0));
+  random(7);
+
+  Sporktris::setPalette(disp);
 
   player_states[0].alive = controllers[0].is_connected();
   player_states[1].alive = controller_count > 1 && controllers[1].is_connected();

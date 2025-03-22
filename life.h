@@ -4,12 +4,17 @@
 #include "display.h"
 #include "controller.h"
 #include "input_processor.h"
+#include "menu.h"
 
 class Life: public InputProcessor {
   public:
   Display& disp;
 
   Life(Display& disp, Controller *controllers, uint8_t controller_count);
+
+  static MenuOption menuOption();
+  static void setPalette(Display& disp);
+  static bool run(Display& disp, Controller *controllers, uint8_t controller_count);
 
   // Returns whether to exit to menu
   bool play();

@@ -3,6 +3,27 @@
 #include "graphics.h"
 #include "pitches.h"
 
+static bool SnakeGame::run(Display& disp, Controller *controllers, uint8_t controller_count) {
+  SnakeGame game = SnakeGame(disp, controllers, controller_count);
+  return game.play();
+}
+
+static MenuOption SnakeGame::menuOption() {
+  static const char PROGMEM graphic[] =
+    "__________"
+    "_11111__3_"
+    "_____1____"
+    "__1111____"
+    "__1_____1_"
+    "_11__1111_"
+    "_1___1____"
+    "_11111____"
+    "__________"
+    "__________"
+  ;
+  return MenuOption(graphic, SnakeGame::setPalette, SnakeGame::run);
+}
+
 enum Dir {
   left,
   right,
@@ -123,18 +144,22 @@ class Player {
   }
 };
 
-Player *players[2];
-
-bool SnakeGame::play() {
-  randomSeed(analogRead(A0));
-
+static void SnakeGame::setPalette(Display &disp) {
   disp.palette[0] = RGB(0,  0,  0);
   disp.palette[1] = RGB(4,  16, 4);   // Player 1
   disp.palette[2] = RGB(4,  4,  16);  // Player 2
   disp.palette[3] = RGB(16, 4,  4);   // Food
-  disp.palette[4] = RGB(4,  12, 12);  // Tie winner
+  disp.palette[4] = RGB(4,  10, 10);  // Tie winner
+}
+
+Player *players[2];
+
+bool SnakeGame::play() {
+  SnakeGame::setPalette(disp);
+
+  randomSeed(analogRead(A0));
   
-  byte start_len = 3;
+  uint8_t start_len = 3;
   Player player1(disp.width / 2 - 1, 0, start_len, Dir::down, disp, 1);
   Player player2(disp.width / 2, disp.height - 1, start_len, Dir::up, disp, 2);
   players[0] = &player1;

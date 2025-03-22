@@ -1,6 +1,26 @@
 #include "life.h"
 #include "graphics.h"
 
+static bool Life::run(Display& disp, Controller *controllers, uint8_t controller_count) {
+  Life game = Life(disp, controllers, controller_count);
+  return game.play();
+}
+
+static MenuOption Life::menuOption() {
+  static const char PROGMEM graphic[] =
+    "__________"
+    "__________"
+    "__8_______"
+    "___88_____"
+    "__88______"
+    "_______8__"
+    "_____8_8__"
+    "______88__"
+    "__________"
+    "__________";
+  return MenuOption(graphic, Life::setPalette, Life::run);
+}
+
 Life::Life(Display& disp, Controller *controllers, uint8_t controller_count):
   InputProcessor(controllers, controller_count),
   disp(disp), paused(true), cursor_x(disp.width / 2), cursor_y(disp.height / 2) {
@@ -14,7 +34,7 @@ Life::Life(Display& disp, Controller *controllers, uint8_t controller_count):
   button_conf[Controller::Button::left]   = { .initial = 200, .subsequent = 100};
 }
 
-bool Life::play() {
+static void Life::setPalette(Display& disp) {
   disp.palette[0] = RGB(0, 0, 0);  // still dead
   disp.palette[1] = RGB(1, 1, 1);  // newly dead
   disp.palette[2] = RGB(8, 8, 8);  // newly alive
@@ -24,7 +44,12 @@ bool Life::play() {
   disp.palette[5] = RGB(1, 1, 20);  // newly dead
   disp.palette[6] = RGB(4, 4, 20);  // newly alive
   disp.palette[7] = RGB(2, 2, 18);  // still alive
+  // Menu color
+  disp.palette[8] = RGB(6, 4, 12);
+}
 
+bool Life::play() {
+  Life::setPalette(disp);
   move_cursor(cursor_x, cursor_y, 0);
 
   disp.refresh();

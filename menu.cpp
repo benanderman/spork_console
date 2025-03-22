@@ -1,141 +1,42 @@
 #include "menu.h"
 #include "graphics.h"
 
-static const char PROGMEM snake_graphic[] =
-      "__________"
-      "_OOOOO__O_"
-      "_____O____"
-      "__OOOO____"
-      "__O_____O_"
-      "_OO__OOOO_"
-      "_O___O____"
-      "_OOOOO____"
-      "__________"
-      "__________";
+void MenuOption::setPalette(Display& disp) {
+  this->setPaletteFunction(disp);
+}
 
-static const char PROGMEM obstacle_graphic[] =
-      "__________"
-      "_OO_______"
-      "_OO_______"
-      "__________"
-      "______OO__"
-      "______OO__"
-      "__________"
-      "__OO______"
-      "__OO_OO___"
-      "_____OO___";
+bool MenuOption::run(Display& disp, Controller *controllers, uint8_t controller_count) {
+  return this->runFunction(disp, controllers, controller_count);
+}
 
-static const char PROGMEM sporktris_graphic[] =
-      "__________"
-      "__________"
-      "__________"
-      "__OO______"
-      "__O_______"
-      "__O_______"
-      "________OO"
-      "O____O__OO"
-      "OO_O_OOOOO"
-      "OO_OOOOO_O";
-
-static const char PROGMEM life_graphic[] =
-      "__________"
-      "__________"
-      "__0_______"
-      "___00_____"
-      "__00______"
-      "_______0__"
-      "_____0_0__"
-      "______00__"
-      "__________"
-      "__________";
-
-static const char PROGMEM dice_graphic[] = 
-      "OOOOOOOOOO"
-      "OOOOOOOOOO"
-      "OO__OOOOOO"
-      "OO__OOOOOO"
-      "____OO__OO"
-      "__OOOO__OO"
-      "__OO______"
-      "__________"
-      "____OO____"
-      "____OO____";
-
-static const char PROGMEM chess_graphic[] = 
-      "__________"
-      "_O_OOOOOO_"
-      "_OOOO_OOO_"
-      "___O______"
-      "__O__O____"
-      "_____O____"
-      "______O___"
-      "_OOOO_OOOO"
-      "_OOOOO__O_"
-      "__________";
-
-struct Option {
-  MenuChoice choice;
-
-  Option(MenuChoice choice): choice(choice) {}
-
-  void draw(Display& disp, int x, int y, bool selected) {
-    int x_origin = x;
-    int y_origin = y;
-    for (int i = 0; i < 100; i++) {
-      int x = x_origin + i % 10;
-      int y = y_origin + i / 10;
-      bool val = read_graphic(i) != '_';
-      byte color = selected ? !val : val;
-      if (disp.neopixels) {
-        if (val) {
-          color = selected ? 3 + choice : 1;
-        } else {
-          color = selected ? 2 : 0;
-        }
+void MenuOption::draw(Display& disp, int8_t origin_x, int8_t origin_y, int8_t override_color) {
+  for (int8_t y = 0; y < 10; y++) {
+    for (int8_t x = 0; x < 10; x++) {
+      char pixel = pgm_read_byte(&graphic[y * 10 + x]) - '0';
+      if (pixel < 0 || pixel > 9) {
+        pixel = 0;
       }
-      disp.set_pixel(x, y, color);
+      if (pixel != 0 && override_color != -1) {
+        pixel = override_color;
+      }
+      disp.set_pixel(x + origin_x, y + origin_y, pixel);
     }
   }
+}
 
-  char read_graphic(int index) {
-    switch (choice) {
-      case snake: return pgm_read_byte(&snake_graphic[index]);
-      case obstacle: return pgm_read_byte(&obstacle_graphic[index]);
-      case sporktris: return pgm_read_byte(&sporktris_graphic[index]);
-      case life: return pgm_read_byte(&life_graphic[index]);
-      case dice: return pgm_read_byte(&dice_graphic[index]);
-      case chess: return pgm_read_byte(&chess_graphic[index]);
+void Menu::run() {
+  while (true) {
+    option_index = choose(option_index);
+    MenuOption& option = options[option_index];
+    bool quit = false;
+    while (!quit) {
+      quit = option.run(disp, controllers, controller_count);
     }
   }
-};
+}
 
-MenuChoice Menu::choose(MenuChoice initial_option) {
-  Option options[] = {
-    Option(MenuChoice::snake),
-    Option(MenuChoice::obstacle),
-    Option(MenuChoice::sporktris),
-    Option(MenuChoice::life),
-    Option(MenuChoice::dice),
-    Option(MenuChoice::chess),
-  };
-  const int option_count = sizeof(options) / sizeof(*options);
-
-  for (int i = 0; i < option_count; i++) {
-    if (options[i].choice == initial_option) {
-      option_index = i;
-      break;
-    }
-  }
-
-  disp.palette[0] = RGB();
-  disp.palette[1] = RGB(8,  8,  8);
-  disp.palette[2] = RGB(1,  1,  1);
-  disp.palette[3] = RGB(0,  0,  24);
-  disp.palette[4] = RGB(0,  24, 0);
-  disp.palette[5] = RGB(24, 0,  0);
-  disp.palette[6] = RGB(8,  16, 0);
-  disp.palette[7] = RGB(12, 0,  12);
-  disp.palette[8] = RGB(0,  24, 0);
+uint8_t Menu::choose(uint8_t initial_option = 0) {
+  disp.palette[15] = RGB(4,  4,  4);
 
   bool chosen = false;
   unsigned long last_change = millis();
@@ -144,6 +45,7 @@ MenuChoice Menu::choose(MenuChoice initial_option) {
     unsigned long now = millis();
     int old_index = option_index;
     Controller::update_state(controllers, controller_count);
+
     if (now > last_change + 300) {
       for (int c = 0; c < controller_count; c++) {
         if (!controllers[c].is_connected()) {
@@ -159,10 +61,10 @@ MenuChoice Menu::choose(MenuChoice initial_option) {
           chosen = true;
         }
       }
-      if (!disp.neopixels && digitalRead(RIGHT_BUTTON_PIN)) {
+      if (LEFT_RIGHT_BUTTONS_ENABLED && digitalRead(CONSOLE_RIGHT_BUTTON_PIN)) {
         chosen = true;
       }
-      if (!disp.neopixels && digitalRead(LEFT_BUTTON_PIN)) {
+      if (LEFT_RIGHT_BUTTONS_ENABLED && digitalRead(CONSOLE_LEFT_BUTTON_PIN)) {
         option_index = (option_index + 1) % option_count;
       }
       if (old_index != option_index) {
@@ -170,7 +72,7 @@ MenuChoice Menu::choose(MenuChoice initial_option) {
       }
     }
 
-    // Update brightness with left and right
+    // Update brightness with start + left and right
     if (now > last_brightness_change + 400) {
       byte brightness = disp.get_brightness();
       bool left = false;
@@ -199,16 +101,20 @@ MenuChoice Menu::choose(MenuChoice initial_option) {
       disp.clear_all();
       for (int i = option_index - 2; i <= option_index + 2; i++) {
         int looped_i = (i + option_count) % option_count;
-        options[looped_i].draw(disp, 0, 10 * (i - option_index) + (disp.height / 4) + offset, false);
+        int8_t override_color = looped_i == old_index ? -1 : 15;
+        options[looped_i].draw(disp, 0, 10 * (i - option_index) + (disp.height / 4) + offset, override_color);
       }
       disp.refresh();
       delay(15);
     }
 
+    options[option_index].setPalette(disp);
+
     disp.clear_all();
     for (int i = option_index - 1; i <= option_index + 1; i++) {
       int looped_i = (i + option_count) % option_count;
-      options[looped_i].draw(disp, 0, 10 * (i - option_index) + (disp.height / 4), i == option_index);
+      int8_t override_color = looped_i == option_index ? -1 : 15;
+      options[looped_i].draw(disp, 0, 10 * (i - option_index) + (disp.height / 4), override_color);
     }
     
     disp.refresh(false);
@@ -218,5 +124,5 @@ MenuChoice Menu::choose(MenuChoice initial_option) {
   // Animate clearing the display, to avoid a power surge
   Graphics::clear_rows(disp);
   
-  return options[option_index].choice;
+  return option_index;
 }
