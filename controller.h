@@ -49,7 +49,7 @@ class Controller {
   // This is managed by InputProcessor; this class does not update it.
   ButtonHandlerStateSet handler_states;
 
-  Controller(int ser_pin, int connected_pin, Controller *aux);
+  Controller(int ser_pin, int connected_pin, Controller *aux = NULL);
   
   bool operator[](Button button) const;
   
